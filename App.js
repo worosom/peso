@@ -16,17 +16,15 @@ import {
   StatusBar,
 } from 'react-native';
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
 import BackgroundGeolocation from "react-native-background-geolocation";
 
 export default class App extends React.Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      active_geofence: 'None'
+    }
+  }
   componentDidMount() {
     ////
     // 1.    Wire up event-listeners
@@ -44,7 +42,7 @@ export default class App extends React.Component {
     // This event fires when the user toggles location-services authorization
     BackgroundGeolocation.onProviderChange(this.onProviderChange);
 
-    BackgroundGeolocation.onGeofence(this.onGeofence);
+    BackgroundGeolocation.onGeofence((event) => this.onGeofence(event, this));
 
     ////
     // 2.    Execute #ready method (required)
@@ -59,11 +57,11 @@ export default class App extends React.Component {
       debug: true, // <-- enable this hear sounds for background-geolocation life-cycle.
       logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
       stopOnTerminate: false,     // <-- Allow the background-service to continue tracking when user closes the app.
-      startOnBoot: true,                // <-- Auto start tracking when device is powered-up.
+      startOnBoot: false,                // <-- Auto start tracking when device is powered-up.
       // HTTP / SQLite config
       url: 'http://yourserver.com/locations',
       batchSync: false,             // <-- [Default: false] Set true to sync locations to server in a single HTTP request.
-      autoSync: true,                 // <-- [Default: true] Set true to sync each location to server as it arrives.
+      autoSync: false,                 // <-- [Default: true] Set true to sync each location to server as it arrives.
       headers: {                            // <-- Optional HTTP headers
         "X-FOO": "bar"
       },
@@ -107,6 +105,22 @@ export default class App extends React.Component {
         latitude: 52.498702,
         longitude: 13.380206,
         notifyOnEntry: true,
+      },
+      {
+        identifier: "studio_front",
+        radius: 20,
+        latitude: 52.498294,
+        longitude: 13.386076,
+        notifyOnEntry: true,
+        notifyOnExit: true
+      },
+      {
+        identifier: "studio_back",
+        radius: 20,
+        latitude: 52.497639, 
+        longitude: 13.386440,
+        notifyOnEntry: true,
+        notifyOnExit: true
       }
     ]).then(success => console.log('Added Geofences')).catch(err => console.error(err))
   }
@@ -130,10 +144,13 @@ export default class App extends React.Component {
   onMotionChange(event) {
     console.log('[motionchange] -', event.isMoving, event.location);
   }
-  onGeofence(geofence) {
+  onGeofence(geofence, self) {
     console.log("[geofence] ", geofence.identifier, geofence.action);
+    self.state.active_geofence = geofence.identifier
+    self.forceUpdate()
   }
   render() {
+    const active = this.state.active_geofence
     return (
       <>
         <StatusBar barStyle="dark-content" />
@@ -141,6 +158,7 @@ export default class App extends React.Component {
           <ScrollView
             contentInsetAdjustmentBehavior="automatic">
             <View>
+              <Text>{active}</Text>
             </View>
           </ScrollView>
         </SafeAreaView>
