@@ -81,6 +81,8 @@ target 'peso' do
 
   pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
 
+  pod 'react-native-video', :path => '../node_modules/react-native-video'
+
   target 'pesoTests' do
     inherit! :complete
     # Pods for testing
