@@ -34,70 +34,70 @@ export default class App extends React.Component {
           'title': 't10',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '1': {
           'uri': 'http://dispatchwork.info/peso/1.mp3',
           'title': 'spektrum',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '2': {
           'uri': 'http://dispatchwork.info/peso/2.mp3',
           'title': 'hornstr',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '3': {
           'uri': 'http://dispatchwork.info/peso/3.mp3',
           'title': 'wartenburg',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '4': {
           'uri': 'http://dispatchwork.info/peso/4.mp3',
           'title': 'gretchen',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '5': {
           'uri': 'http://dispatchwork.info/peso/5.mp3',
           'title': 'obentraut',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '6': {
           'uri': 'http://dispatchwork.info/peso/6.mp3',
           'title': 'ruhldorfer',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '7': {
           'uri': 'http://dispatchwork.info/peso/7.mp3',
           'title': 'hasenheide rampe',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '8': {
           'uri': 'http://dispatchwork.info/peso/8.mp3',
           'title': 'hasenheide feld',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         },
         '9': {
           'uri': 'http://dispatchwork.info/peso/9.mp3',
           'title': 'tempelufer/großbeeren',
           'paused': true,
           'seek': 0,
-          'volume': 0.5
+          'volume': 1
         }
       }
     }
@@ -135,9 +135,8 @@ export default class App extends React.Component {
       fetch('https://dispatchwork.info/peso/peso-data.json')
       .then(response => response.json())
       .then(data => {
-        //console.log(JSON.stringify(data.geofence, undefined, 2))
-        //console.log(JSON.stringify(data.geofenceData, undefined, 2))
-        console.log(data.geofenceData)
+        console.log(JSON.stringify(data.geofence, undefined, 2))
+        console.log(data.geofence)
       })
       .catch(error => console.error(error));
 
@@ -210,26 +209,26 @@ export default class App extends React.Component {
         notifyOnExit: true
       },
       {
-        identifier: "7", // hasenheide rampe
-        radius: 100,
-        latitude: 52.487623,
-        longitude: 13.414109,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "8", // hasenheide feld
-        radius: 100,
-        latitude: 52.481445,
-        longitude: 13.419373,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "9", // tempelufer/großbeeren
+        identifier: "7", // johnny 1
         radius: 50,
-        latitude: 52.498665,
-        longitude: 13.383811,
+        latitude: 50.838116, 
+        longitude: 4.328454,
+        notifyOnEntry: true,
+        notifyOnExit: true
+      },
+      {
+        identifier: "8", // johnny 2
+        radius: 50,
+        latitude: 50.839077,
+        longitude: 4.329575,
+        notifyOnEntry: true,
+        notifyOnExit: true
+      },
+      {
+        identifier: "9", // johnny 3
+        radius: 50,
+        latitude: 50.838719,
+        longitude: 4.327213,
         notifyOnEntry: true,
         notifyOnExit: true
       },
