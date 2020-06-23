@@ -79,22 +79,22 @@ export default class App extends React.Component {
           'volume': 1
         },
         '7': {
-          'uri': 'http://dispatchwork.info/peso/7.mp3',
-          'title': 'hasenheide rampe',
+          'uri': 'http://dispatchwork.info/peso/4.mp3',
+          'title': 'Maison Grill',
           'paused': true,
           'seek': 0,
           'volume': 1
         },
         '8': {
-          'uri': 'http://dispatchwork.info/peso/8.mp3',
-          'title': 'hasenheide feld',
+          'uri': 'http://dispatchwork.info/peso/7.mp3',
+          'title': 'Conseil',
           'paused': true,
           'seek': 0,
           'volume': 1
         },
         '9': {
           'uri': 'http://dispatchwork.info/peso/9.mp3',
-          'title': 'tempelufer/großbeeren',
+          'title': 'Rue de l\'Instruction 16-2',
           'paused': true,
           'seek': 0,
           'volume': 1
@@ -227,8 +227,8 @@ export default class App extends React.Component {
       {
         identifier: "9", // johnny 3
         radius: 50,
-        latitude: 50.838719,
-        longitude: 4.327213,
+        latitude: 50.839294,
+        longitude: 4.326032,
         notifyOnEntry: true,
         notifyOnExit: true
       },
