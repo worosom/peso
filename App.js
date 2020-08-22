@@ -10,11 +10,13 @@ import {
   ScrollView,
   View,
   Text,
+  Button,
   StatusBar,
 } from 'react-native';
 
 import BackgroundGeolocation from "react-native-background-geolocation";
 import Video from 'react-native-video';
+
 
 export default class App extends React.Component {
 
@@ -28,78 +30,7 @@ export default class App extends React.Component {
       rewindGap: 7,
       isFading: false,
       requestId: null, 
-      data: {
-        '0': {
-          'uri': 'http://dispatchwork.info/peso/0.mp3',
-          'title': 't10',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '1': {
-          'uri': 'http://dispatchwork.info/peso/1.mp3',
-          'title': 'spektrum',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '2': {
-          'uri': 'http://dispatchwork.info/peso/2.mp3',
-          'title': 'hornstr',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '3': {
-          'uri': 'http://dispatchwork.info/peso/3.mp3',
-          'title': 'wartenburg',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '4': {
-          'uri': 'http://dispatchwork.info/peso/4.mp3',
-          'title': 'gretchen',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '5': {
-          'uri': 'http://dispatchwork.info/peso/5.mp3',
-          'title': 'obentraut',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '6': {
-          'uri': 'http://dispatchwork.info/peso/6.mp3',
-          'title': 'ruhldorfer',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '7': {
-          'uri': 'http://dispatchwork.info/peso/4.mp3',
-          'title': 'Maison Grill',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '8': {
-          'uri': 'http://dispatchwork.info/peso/7.mp3',
-          'title': 'Conseil',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        },
-        '9': {
-          'uri': 'http://dispatchwork.info/peso/9.mp3',
-          'title': 'Rue de l\'Instruction 16-2',
-          'paused': true,
-          'seek': 0,
-          'volume': 1
-        }
-      }
+      data: []
     }
   }
   componentDidMount() {
@@ -132,15 +63,26 @@ export default class App extends React.Component {
     }, (state) => {
       console.log("[BackgroundGeolocation is configured and ready]", state.enabled);
       
-      fetch('https://dispatchwork.info/peso/peso-data.json')
+      fetch('https://pelerinage-sonore.net/peso.json')
       .then(response => response.json())
       .then(data => {
         console.log(JSON.stringify(data.geofence, undefined, 2))
-        console.log(data.geofence)
+        data = data.geofence.map(g => {
+          return {
+            ...g,
+            paused: true,
+            seek: 0,
+            volume: 1,
+            notifyOnEntry: true,
+            notifyOnExit: true
+          }
+        })
+        this.state.data = data
+        console.log(this.state.data)
+        this.setupGeofences();
       })
       .catch(error => console.error(error));
 
-      this.setupGeofences();
 
       if (!state.enabled) {
         BackgroundGeolocation.start(function() {
@@ -151,88 +93,9 @@ export default class App extends React.Component {
   }
 
   setupGeofences() {
-    BackgroundGeolocation.addGeofences([
-      {
-        identifier: "0", // atelier
-        radius: 50,
-        latitude: 52.498187,
-        longitude: 13.386352,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "1", // spektrum
-        radius: 50,
-        latitude: 52.498702,
-        longitude: 13.380206,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "2", // rose
-        radius: 50,
-        latitude: 52.494036,
-        longitude: 13.380801,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "3", // grossbeerenstr
-        radius: 50,
-        latitude: 52.496129,
-        longitude: 13.384344,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "4", // gretchen
-        radius: 50,
-        latitude: 52.496321,
-        longitude: 13.387177,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "5", // obentraut
-        radius: 50,
-        latitude: 52.497328,
-        longitude: 13.379923,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "6", // ruhldorfer
-        radius: 50,
-        latitude: 52.497594,
-        longitude: 13.388207,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "7", // johnny 1
-        radius: 50,
-        latitude: 50.838116, 
-        longitude: 4.328454,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "8", // johnny 2
-        radius: 50,
-        latitude: 50.839077,
-        longitude: 4.329575,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-      {
-        identifier: "9", // johnny 3
-        radius: 50,
-        latitude: 50.839294,
-        longitude: 4.326032,
-        notifyOnEntry: true,
-        notifyOnExit: true
-      },
-    ]).then(success => console.log('Added Geofences')).catch(err => console.error(err))
+    BackgroundGeolocation.addGeofences(this.state.data)
+      .then(success => console.log('Added Geofences'))
+      .catch(err => console.error(err))
   }
   componentWillUnmount() {
     BackgroundGeolocation.removeListeners();
@@ -264,7 +127,15 @@ export default class App extends React.Component {
 
     if ('ENTER' == geofence.action) {
       self.state.active_geofence = geofence.identifier
-      self.state.data[geofence.identifier].paused = false
+        this.state.data = this.state.data.map((g, key) => {
+          if (key == this.state.active_geofence) {
+            return {
+              ...g,
+              paused: false
+            }
+          }
+          return g
+        })
 
       this.fadeIn()
     } else {
@@ -314,15 +185,23 @@ export default class App extends React.Component {
           remaining = end - current,
           t = 1 - remaining / duration
 
-          if(t >= 1){
-            this.state.isFading = false
-            return
+      if(t >= 1){
+        this.state.isFading = false
+        return
+      }
+
+      this.state.data = this.state.data.map((g, key) => {
+        if (key == this.state.active_geofence) {
+          return {
+            ...g,
+            volume: t
           }
+        }
+        return g
+      })
 
-          this.state.data[this.state.active_geofence].volume = t
-
-          this.forceUpdate()
-          this.doFadeIn(duration, end)
+      this.forceUpdate()
+      this.doFadeIn(duration, end)
     }
     this.state.requestId = requestAnimationFrame(fn)
   }
@@ -344,7 +223,16 @@ export default class App extends React.Component {
 
       if (t <= 0) {
         this.state.isFading = false
-        this.state.data[this.state.active_geofence].paused = true
+
+        this.state.data = this.state.data.map((g, key) => {
+          if (key == this.state.active_geofence) {
+            return {
+              ...g,
+              paused: true
+            }
+          }
+          return g
+        })
         this.state.active_geofence = null
         this.forceUpdate()
         return
@@ -369,7 +257,8 @@ export default class App extends React.Component {
           <ScrollView>
             <View>
               <Text>{active.title}</Text>
-
+              <Button onPress={() => BackgroundGeolocation.stop(() => this.fadeOut()) } title="Stop"/>
+              <Button onPress={BackgroundGeolocation.start} title="Start"/>
               <Video 
                 source={{uri: active.uri}}
                 audioOnly={true}
