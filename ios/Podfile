@@ -77,11 +77,12 @@ target 'peso' do
   pod 'glog', :podspec => '../node_modules/react-native/third-party-podspecs/glog.podspec'
   pod 'Folly', :podspec => '../node_modules/react-native/third-party-podspecs/Folly.podspec'
 
-  pod 'RNBackgroundGeolocation', :path => '../node_modules/react-native-background-geolocation'
 
   pod 'RNBackgroundFetch', :path => '../node_modules/react-native-background-fetch'
 
   pod 'react-native-video', :path => '../node_modules/react-native-video'
+
+  pod 'ReactNativeAudioToolkit', :path => '../node_modules/@react-native-community/audio-toolkit'
 
   target 'pesoTests' do
     inherit! :complete
