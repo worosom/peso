@@ -1,48 +1,52 @@
 <template>
   <view class="container">
-  <view class="switch">
-  <text class="switch__label">
-  Geolocation {{backgroundGeolocationRunning ? 'on' : 'off'}}
-  </text>
-  <switch
-    class="switch__switch"
-    :on-value-change="toggleGeolocation"
-    :value="backgroundGeolocationRunning">
-  </switch>
-  </view>
-  <view class="switch">
-  <text class="switch__label">
-  Sattelite view
-  </text>
-  <switch
-    class="switch__switch"
-    :on-value-change="toggleSattelite"
-    :value="satteliteView">
-  </switch>
-  </view>
-  <view class="info">
-  <text>
-  {{activeGeofenceTitle}}
-  </text>
-  </view>
-  <MapView
-    ref="map"
-    class="map"
-    :region="mapRegion"
-    :mapType="satteliteView ? 'hybrid' : 'standard'"
-    showsUserLocation
-    showsMyLocationButton>
-  <Circle
-    v-for="geofence, i in data"
-    :ref="`circle-${i}`"
-    :center="geofence"
-    :radius="geofence.radius"
-    :fillColor="markerColors[i]"
-    :zIndex="3"
-    :strokeWidth="1"
-    strokeColor="red"
-    />
-  </MapView>
+    <touchable-opacity
+      :on-press="toggleGeolocation"
+      class="switch">
+      <text
+        class="switch__label">
+        Geolocation
+      </text>
+      <switch
+        class="switch__switch"
+        :on-value-change="toggleGeolocation"
+        :value="backgroundGeolocationRunning"/>
+    </touchable-opacity>
+    <touchable-opacity
+      :on-press="toggleSattelite"
+      class="switch">
+      <text class="switch__label">
+      Sattelite view
+      </text>
+      <switch
+        class="switch__switch"
+        :on-value-change="toggleSattelite"
+        :value="satteliteView">
+      </switch>
+    </touchable-opacity>
+    <view class="info">
+      <text v-if="backgroundGeolocationRunning">
+      {{idle_player && idle_player.isPlaying ? 'idle' : activeGeofenceTitle}}
+      </text>
+    </view>
+    <MapView
+      ref="map"
+      class="map"
+      :region="mapRegion"
+      :mapType="satteliteView ? 'hybrid' : 'standard'"
+      showsUserLocation
+      showsMyLocationButton>
+      <Circle
+        v-for="geofence in data"
+        :ref="`circle-${geofence.identifier}`"
+        :center="geofence"
+        :radius="geofence.radius"
+        :fillColor="markerColor(geofence.identifier)"
+        :zIndex="3"
+        :strokeWidth="1"
+        strokeColor="gray"
+        />
+    </MapView>
   </view>
 </template>
 
@@ -66,7 +70,7 @@ export default {
       rewindGap: 7,
       isFading: false,
       requestId: null,
-      data: [],
+      data: {},
       playbackOptions: {
         continuesToPlayInBackground: true,
         autoDestroy: false,
@@ -80,7 +84,8 @@ export default {
         latitudeDelta: 0.0092,
         longitudeDelta: 0.0042
       },
-      satteliteView: false
+      satteliteView: false,
+      idle_player: null
     }
   },
   computed: {
@@ -93,12 +98,16 @@ export default {
       return this.data[this.activeGeofence].uri
     },
     markerColors() {
-      return this.data.map((geofence, i) => {
-        if (geofence.identifier == this.activeGeofence) {
-          return 'rgba(33, 33, 255, .5)'
-        }
-        return 'rgba(255, 0, 0, .5)'
+      const colors = {}
+      Object.keys(this.data).map(identifier => {
+        colors[identifier] = this.markerColor(identifier)
       })
+      return colors
+    }
+  },
+  watch: {
+    player() {
+      this.$forceUpdate()
     }
   },
   mounted() {
@@ -123,16 +132,15 @@ export default {
       fetch('https://pelerinage-sonore.net/peso.json')
         .then(response => response.json())
         .then(data => {
-          data = data.geofence.map(g => {
-            return {
+          this.data = {}
+          data.geofence.map((g, i) => {
+            this.data[g.identifier] = {
               ...g,
               notifyOnEntry: true,
               notifyOnExit: true,
             }
           })
-          this.data = data
           // console.log(this.data)
-          console.log(this.players)
           this.setupGeofences()
         })
         .catch(error => console.error(error));
@@ -146,14 +154,16 @@ export default {
     });
   },
   beforeDestroy() {
-    this.idle_player.destroy()
+    BackgroundGeolocation.removeGeofences()
+    this.stopGeolocation()
+    this.idle_player.stop(_ => this.idle_player.destroy())
     if (this.player) {
-      this.player.destroy()
+      this.player.stop(_ => this.player.destroy())
     }
   },
   methods: {
     setupGeofences() {
-      BackgroundGeolocation.addGeofences(this.data)
+      BackgroundGeolocation.addGeofences(Object.values(this.data))
         .then(success => console.log('Added Geofences'))
         .catch(err => console.error(err))
     },
@@ -188,15 +198,21 @@ export default {
     fadeIn() {
       let duration = 3000,
         end = new Date().getTime() + duration
-      this.idle_player.stop()
+      if (this.idle_player) {
+        this.idle_player.pause()
+      }
       if (this.player) {
-        this.player.destroy()
+        this.player.stop(_ => {
+          this.player.destroy(_ => {this.player = null; this.fadeIn()})
+        })
+        return
       }
       this.player = new Player(this.uri, this.playbackOptions)
       this.player.volume = 0
       this.player.play(_ => {
         this.isFading = true
         this.doFadeIn(duration, end)
+        this.$forceUpdate()
       })
     },
     doFadeIn(duration, end) {
@@ -224,7 +240,7 @@ export default {
 
       this.doFadeOut(duration, end)
     },
-    doFadeOut (duration, end) {
+    doFadeOut(duration, end) {
       const fn = () => {
         let current = new Date().getTime(),
           remaining = end - current,
@@ -233,8 +249,15 @@ export default {
         if (t <= 0) {
           this.isFading = false
 
-          this.player.stop()
-          this.activeGeofence = null
+          this.idle_player.seek(0, _ => {
+            this.idle_player.looping = true
+            this.idle_player.play(_ => {
+              this.player.pause(_ => {
+                this.activeGeofence = null
+                this.$forceUpdate()
+              })
+            })
+          })
           return
         }
         this.player.volume = t
@@ -253,11 +276,13 @@ export default {
     stopGeolocation() {
       BackgroundGeolocation.stop(() => {
         this.backgroundGeolocationRunning = false
+        if (this.idle_player) {
+          this.idle_player.pause()
+        }
+        if (this.player) {
+          this.fadeOut()
+        }
       })
-      this.idle_player.pause()
-      if (this.player) {
-        this.player.stop()
-      }
     },
     toggleGeolocation() {
       if (this.backgroundGeolocationRunning) {
@@ -268,6 +293,12 @@ export default {
     },
     toggleSattelite() {
       this.satteliteView = !this.satteliteView
+    },
+    markerColor(identifier) {
+      if (identifier == this.activeGeofence) {
+        return 'rgba(128, 128, 255, .5)'
+      }
+      return 'rgba(255, 0, 0, .5)'
     }
   }
 }
@@ -275,20 +306,39 @@ export default {
 
 <style>
 .container {
-  padding-top: 40;
   background-color: white;
-  align-items: center;
+  padding-top: 75;
+  align-items: stretch;
   justify-content: center;
   flex: 1;
 }
 
 .switch {
   flex-direction: row;
+  width: 100%;
+  height: 50;
+  align-items: center;
+  border-bottom-width: 1;
+  border-bottom-color: #cccccccc;
+  padding-left: 20;
+  padding-right: 20;
 }
 
 .switch__label {
-  text-align: right;
   padding: 2;
+  width: 50%;
+}
+
+.switch__switch {
+  width: 50%;
+}
+
+.info {
+  flex-direction: row;
+  width: 100%;
+  height: 50;
+  align-items: center;
+  justify-content: center;
 }
 
 .map {
