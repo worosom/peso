@@ -1,11 +1,31 @@
 <template>
   <view class="container">
+    <MapView
+      ref="map"
+      class="map"
+      :region="mapRegion"
+      :mapType="satteliteView ? 'hybrid' : 'standard'"
+      :customMapStyle="getMapStyle()"
+      showsUserLocation
+      showsMyLocationButton>
+      <Circle
+        v-for="geofence in data"
+        :ref="`circle-${geofence.identifier}`"
+        :center="geofence"
+        :radius="geofenceRadius(geofence.radius)"
+        :fillColor="markerColor(geofence.identifier)"
+        :zIndex="3"
+        :strokeWidth="1"
+        strokeColor="rgba(200,200,200,1)"
+        />
+    </MapView>
+    <text class="title">Pelerinage Sonore</text>
     <touchable-opacity
       :on-press="toggleGeolocation"
       class="switch">
       <text
         class="switch__label">
-        Geolocation
+        Tracking
       </text>
       <switch
         class="switch__switch"
@@ -13,6 +33,18 @@
         :value="backgroundGeolocationRunning"/>
     </touchable-opacity>
     <touchable-opacity
+      :on-press="offlineStorage"
+      class="offline_switch">
+      <switch
+        class="offline_switch__switch"
+        :on-value-change="offlineStorage"
+        :value="downloadRunning"/>
+      <text
+        class="offline_switch__label">
+        download Music for offline use
+      </text>
+    </touchable-opacity>
+    <!--<touchable-opacity
       :on-press="toggleSattelite"
       class="switch">
       <text class="switch__label">
@@ -23,30 +55,12 @@
         :on-value-change="toggleSattelite"
         :value="satteliteView">
       </switch>
-    </touchable-opacity>
+    </touchable-opacity>-->
     <view class="info">
       <text v-if="backgroundGeolocationRunning">
-      {{idle_player && idle_player.isPlaying ? 'idle' : activeGeofenceTitle}}
+      {{idle_player && idle_player.isPlaying ? '-' : activeGeofenceTitle}}
       </text>
     </view>
-    <MapView
-      ref="map"
-      class="map"
-      :region="mapRegion"
-      :mapType="satteliteView ? 'hybrid' : 'standard'"
-      showsUserLocation
-      showsMyLocationButton>
-      <Circle
-        v-for="geofence in data"
-        :ref="`circle-${geofence.identifier}`"
-        :center="geofence"
-        :radius="geofence.radius"
-        :fillColor="markerColor(geofence.identifier)"
-        :zIndex="3"
-        :strokeWidth="1"
-        strokeColor="gray"
-        />
-    </MapView>
   </view>
 </template>
 
@@ -60,6 +74,7 @@ import {
 import MapView from 'react-native-maps';
 import { Marker, Circle } from 'react-native-maps';
 import { config } from './src/BackgroundGeolocation.js'
+import { configMap } from './src/Map.js'
 
 
 export default {
@@ -77,6 +92,7 @@ export default {
         mixWithOthers: true
       },
       backgroundGeolocationRunning: false,
+      downloadRunning: false,
       userCoordinate: null,
       mapRegion: {
         latitude: 52.516360,
@@ -284,6 +300,13 @@ export default {
         }
       })
     },
+    offlineStorage() {
+      if (this.downloadRunning) {
+        //
+      } else {
+        //
+      }
+    },
     toggleGeolocation() {
       if (this.backgroundGeolocationRunning) {
         this.stopGeolocation()
@@ -296,9 +319,15 @@ export default {
     },
     markerColor(identifier) {
       if (identifier == this.activeGeofence) {
-        return 'rgba(128, 128, 255, .5)'
+        return 'rgba(255, 0, 0, .5)'
       }
-      return 'rgba(255, 0, 0, .5)'
+      return 'rgba(225, 225, 225, .7)'
+    },
+    geofenceRadius(radius) {
+      return radius / 2
+    },
+    getMapStyle() {
+      return configMap.mapStyle
     }
   }
 }
@@ -306,39 +335,54 @@ export default {
 
 <style>
 .container {
-  background-color: white;
-  padding-top: 75;
-  align-items: stretch;
+  /*align-items: stretch;
   justify-content: center;
-  flex: 1;
+  flex: 1;*/
+}
+
+.title {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 1.6;
+  padding: 10;
+}
+
+.offline_switch {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100;
+  background-color: white;
+  padding: 5;
 }
 
 .switch {
-  flex-direction: row;
-  width: 100%;
-  height: 50;
-  align-items: center;
-  border-bottom-width: 1;
-  border-bottom-color: #cccccccc;
-  padding-left: 20;
-  padding-right: 20;
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100;
+  background-color: white;
+  padding: 5;
 }
 
 .switch__label {
-  padding: 2;
-  width: 50%;
+  width: 60%;
 }
 
 .switch__switch {
-  width: 50%;
+  width: 40%;
 }
 
 .info {
-  flex-direction: row;
-  width: 100%;
-  height: 50;
-  align-items: center;
-  justify-content: center;
+  position: absolute;
+  margin-left: 50;
+  padding: 5;
+  bottom: 0;
+  right: 0;
+  background-color: red;
 }
 
 .map {
