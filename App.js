@@ -1,246 +1,333 @@
 import React from 'react'
 import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
   View,
   Text,
+  Pressable,
   Button,
-  StatusBar
+  Switch,
+  AppState,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
-import BackgroundGeolocation from "react-native-background-geolocation";
+import AsyncStorage from '@react-native-community/async-storage'
+import NetInfo from '@react-native-community/netinfo'
+import BackgroundGeolocation from 'react-native-background-geolocation'
+import { config } from './src/backgroundGeolocation.js'
+import { Player } from '@react-native-community/audio-toolkit'
+import RNFetchBlob from 'rn-fetch-blob'
+import configMap from './src/components/Map.js'
+import styles from './src/styles.js'
 import {
-  Player,
-  Recorder,
-  MediaStates
-} from '@react-native-community/audio-toolkit';
-import MapView from 'react-native-maps';
-import { Marker, Circle } from 'react-native-maps';
-import { config } from './src/BackgroundGeolocation.js'
-import { configMap } from './src/Map.js'
+  dirs,
+  pathFromUri,
+  download,
+  onGeofence,
+  idleMessage,
+  fetchGeofences,
+  errors
+} from './src/util.js'
+import Map from './src/components/Map.js'
+import OfflineMode from './src/components/OfflineMode.js'
+import AppInfo from './src/components/Info.js'
+import ErrorMessage from './src/components/Error.js'
 
-function onGeofence(geofence, self) {
-  console.log('[geofence]', geofence.action, geofence.identifier);
-
-  if (Object.keys(self.state.data).indexOf(geofence.identifier) < 0) {
-    return
-  }
-  if(self.state.isFading){
-    cancelAnimationFrame(self.state.requestId)
-  }
-
-  if ('ENTER' == geofence.action) {
-    self.state.mapRegion = {
-      ...self.state.mapRegion,
-      ...geofence
-    }
-    self.activeGeofence = geofence.identifier
-    self.fadeIn()
-  } else {
-    self.fadeOut()
-  }
-}
-
-function onLocation(event, self) {
-  console.log('OnLocation')
-  self.state.userCoordinate = event.coords
-  self.state.mapRegion = {
-    ...self.state.mapRegion,
-    ...self.state.userCoordinate
-  }
-}
 
 export default class App extends React.Component {
   constructor(props) {
     super(props)
+    this.player = new Player()
+    this.appStateChange = state => state == 'active' && this.forceUpdate()
+    this.playbackOptions = {
+      continuesToPlayInBackground: true,
+      autoDestroy: false,
+      wakeLock: true,
+      mixWithOthers: true
+    }
     this.state = {
-      activeGeofence: null,
-      rewindGap: 7,
-      isFading: false,
-      requestId: null,
-      data: {},
-      playbackOptions: {
-        continuesToPlayInBackground: true,
-        autoDestroy: false,
-        mixWithOthers: true
-      },
+      geofencesLoaded: false,
+      geofencesLoading: false,
       backgroundGeolocationRunning: false,
-      downloadRunning: false,
-      userCoordinate: null,
-      mapRegion: {
-        latitude: 52.516360,
-        longitude: 13.344096,
-        latitudeDelta: 0.0092,
-        longitudeDelta: 0.0042
-      },
-      satteliteView: false,
-      idle_player: null,
-      player: null
+      downloading: false,
+      downloadingAll: false,
+      activeGeofenceIdentifier: null,
+      data: {},
+      errorMessage: null,
+      idleMessage: idleMessage(),
+      showAppInfo: true
     }
   }
   componentDidMount() {
-    BackgroundGeolocation.onLocation((event) => onLocation(event, this), console.log)
-
-    // BackgroundGeolocation.onMotionChange(this.onMotionChange);
-    // BackgroundGeolocation.onActivityChange(this.onActivityChange);
-    // BackgroundGeolocation.onProviderChange(this.onProviderChange);
-
     BackgroundGeolocation.onGeofence((event) => onGeofence(event, this));
-    this.state.idle_player = new Player('https://pelerinage-sonore.net/media/peso/7.mp3', this.state.playbackOptions)
-    this.state.idle_player.looping = true
-    this.state.idle_player.volume = .4
-    this.state.idle_player.play()
-
+    AppState.addEventListener('change', this.appStateChange)
+    NetInfo.addEventListener(netState => {
+      if (this.state.geofencesLoaded) {
+        if (!netState.isConnected && !this.state.storageState) {
+          this.setState({'errorMessage': errors('networkError')})
+          this.stopGeolocation()
+        } else if (netState.isConnected) {
+          this.setState({'errorMessage': null})
+        }
+      }
+    })
+    const loadFromStorage = _ => {
+      AsyncStorage.getItem('@data')
+        .then(data => JSON.parse(data))
+        .then(data => {
+          if (data) {
+            this.setState({geofencesLoading: false})
+            this.setup(data)
+          } else {
+            this.setState({'errorMessage': errors('TypeError: Network request failed')})
+          }
+        })
+        .catch(err => this.setState({'errorMessage': errors(String(err))}))
+    }
+    NetInfo.addEventListener(netState => {
+      if (!this.state.geofencesLoaded && !this.state.geofencesLoading) {
+        this.setState({geofencesLoading: true})
+        if (netState && netState.isConnected) {
+          fetchGeofences().then(data => {
+            this.setState({geofencesLoading: false, errorMessage: null})
+            this.setup(data)
+            AsyncStorage.setItem('@data', JSON.stringify(data))
+          }).catch(err => {
+            this.setState({
+              geofencesLoading: false,
+              errorMessage: errors('networkError')
+            }, _ => {
+              loadFromStorage()
+            })
+          })
+        } else {
+          loadFromStorage()
+          this.setState({geofencesLoading: false, errorMessage: errors('networkError')})
+        }
+      }
+    })
+  }
+  setup(data) {
     BackgroundGeolocation.ready(config, (state) => {
       console.log("[BackgroundGeolocation is configured and ready]");
-      this.state.backgroundGeolocationRunning = true
-
-      fetch('https://pelerinage-sonore.net/peso.json')
-        .then(response => response.json())
-        .then(data => {
-          this.state.data = {}
-          data.geofence.map((g, i) => {
-            this.state.data[g.identifier] = {
-              ...g,
-              notifyOnEntry: true,
-              notifyOnExit: true,
-            }
-          })
-          // console.log(this.data)
-          this.setupGeofences()
+      data.geofence.map((g, i) => {
+        this.state.data[g.identifier] = {
+          ...g,
+          longitude: Number(g.longitude),
+          latitude: Number(g.latitude),
+          radius: Number(g.radius),
+          notifyOnEntry: true,
+          notifyOnExit: true,
+          download: -1,
+          visited: false
+        }
+        const path = pathFromUri(g.uri)
+        RNFetchBlob.fs.exists(path).then(exists => {
+          this.setData(g.identifier, 'download', exists ? 1 : -1)
+          let downloaded = Object.values(this.state.data).map(g => g.download == 1)
+          downloaded = downloaded.every(_ => _)
+          if (downloaded)
+            this.setState({storageState: true})
         })
-        .catch(error => console.error(error));
-
-
-      if (!state.enabled) {
-        BackgroundGeolocation.start(function() {
-          console.log("[Start BackgroundGeolocation]");
-        });
-      }
-    });
+      })
+      this.setupGeofences()
+    })
   }
   componentWillUnmount() {
     BackgroundGeolocation.removeGeofences()
+    AppState.removeEventListener('change', this.appStateChange)
     this.stopGeolocation()
-    this.state.idle_player.stop(_ => this.state.idle_player.destroy())
-    if (this.state.player) {
-      this.state.player.stop(_ => this.state.player.destroy())
+    if (this.player) {
+      this.player.stop()
+      this.player.destroy()
     }
   }
   setupGeofences() {
     BackgroundGeolocation.addGeofences(Object.values(this.state.data))
-      .then(success => console.log('Added Geofences'))
+      .then(success => {
+        this.setState({geofencesLoaded: true})
+        console.log('Added Geofences')
+      })
       .catch(err => console.error(err))
   }
-  fadeIn() {
-    let duration = 3000,
-      end = new Date().getTime() + duration
-    if (this.state.idle_player) {
-      this.state.idle_player.pause()
-    }
-    if (this.state.player) {
-      this.state.player.stop(_ => {
-        this.state.player.destroy(_ => {this.state.player = null; this.fadeIn()})
-      })
+  play() {
+    if (!this.state.activeGeofenceIdentifier) {
+      console.log('Active geofence is null')
       return
     }
-    this.state.player = new Player(this.state.uri, this.state.playbackOptions)
-    this.state.player.volume = 0
-    this.state.player.play(_ => {
-      this.state.isFading = true
-      this.doFadeIn(this, duration, end)
+
+    const identifier = this.state.activeGeofenceIdentifier
+    const downloadState = this.state.data[identifier].download
+    if (downloadState == 0) {
+      return
+    }
+    this.player.destroy(_ => {
+      if (!this.state.activeGeofenceIdentifier) {
+        console.log('Active geofence is null')
+        return
+      }
+      const uri = this.activeGeofence().uri
+      if (this.activeGeofence().download == -1) {
+        this.setData(identifier, 'download', 0)
+        this.setState({'downloading': true})
+      }
+      download(uri).then(res => {
+        const path = res.path()
+        console.log('Downloaded', path)
+        this.setData(identifier, 'download', 1)
+        this.setState({'downloading': false})
+        if (this.state.activeGeofenceIdentifier) {
+          this.player = new Player(path, this.playbackOptions)
+          this.player.volume = 1
+          this.player.play(_ => {
+            console.log('Playing', path)
+            this.setData(this.state.activeGeofenceIdentifier, 'visited', true)
+          })
+        }
+      }).catch(err => console.log(err))
     })
   }
-  doFadeIn(self, duration, end) {
-    const fn = () => {
-      let current = new Date().getTime(),
-        remaining = end - current,
-        t = 1 - remaining / duration
-
-      if(t >= 1){
-        self.state.isFading = false
-        return
-      }
-
-      self.state.player.volume = t
-
-      self.doFadeIn(self, duration, end)
-    }
-    self.state.requestId = requestAnimationFrame(fn)
-  }
-  fadeOut() {
-    let duration = 5000,
-      end = new Date().getTime() + duration
-
-    this.state.isFading = true
-
-    this.doFadeOut(this, duration, end)
-  }
-  doFadeOut(self, duration, end) {
-    const fn = () => {
-      let current = new Date().getTime(),
-        remaining = end - current,
-        t = remaining / duration
-
-      if (t <= 0) {
-        self.state.isFading = false
-
-        self.state.idle_player.seek(0, _ => {
-          self.state.idle_player.looping = true
-          self.state.idle_player.play(_ => {
-            self.state.player.pause(_ => {
-              self.state.activeGeofence = null
-            })
-          })
-        })
-        return
-      }
-      self.state.player.volume = t
-
-      self.doFadeOut(self, duration, end)
-    }
-
-    this.state.requestId = requestAnimationFrame(fn)
+  stop(cb) {
+    this.player.pause(_ => {
+      this.setState({activeGeofenceIdentifier: null})
+      cb && cb()
+    })
   }
   startGeolocation() {
-    BackgroundGeolocation.start(() => {
-      this.state.backgroundGeolocationRunning = true
-    })
-    this.state.idle_player.play()
-  }
-  stopGeolocation() {
-    BackgroundGeolocation.stop(() => {
-      this.state.backgroundGeolocationRunning = false
-      if (this.state.idle_player) {
-        this.state.idle_player.pause()
-      }
-      if (this.state.player) {
-        this.fadeOut()
-      }
+    BackgroundGeolocation.start(_ => {
+      console.log('Started Geolocation')
+      BackgroundGeolocation.changePace(true, function() {
+        console.log('- plugin is now tracking');
+      })
+      this.setState({backgroundGeolocationRunning: true})
     })
   }
-  offlineStorage() {
-    if (this.state.downloadRunning) {
-      //
-    } else {
-      //
-    }
+  stopGeolocation(cb) {
+    this.stop(_ => {
+      BackgroundGeolocation.stop().then(_ => {
+        console.log('Stopped Geolocation')
+        this.setState({backgroundGeolocationRunning: false})
+        cb && cb()
+      })
+    })
+  }
+  downloadAll() {
+    this.setState({storageState: true})
+    this.stop(_ => {
+      this.setState({downloadingAll: true})
+      const backgroundGeolocationRunning = this.state.backgroundGeolocationRunning
+      if (backgroundGeolocationRunning)
+        this.stopGeolocation()
+      Object.values(this.state.data).map(geofence => {
+        if (this.state.activeGeofenceIdentifier == geofence.identifier) {
+          return
+        }
+        this.setData(geofence.identifier, 'download', 0)
+        download(geofence.uri)
+          .then(_ => {
+            this.setData(geofence.identifier, 'download', 1)
+            let downloaded = Object.values(this.state.data).map(g => g.download == 1)
+            downloaded = downloaded.every(_ => _)
+            if (downloaded) {
+              if (backgroundGeolocationRunning) {
+                this.startGeolocation()
+              }
+              this.setState({downloadingAll: false})
+            }
+          })
+          .catch(err => {
+            this.setState({
+              'storageState': false,
+              'downloadingAll': false,
+              'errorMessage': errors('networkError')
+            })
+          })
+      })
+    })
+  }
+  downloadAllAlert() {
+    Alert.alert(
+      'Download size ~100 Megabytes',
+      'WiFi connection recommended.',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Continue',
+          onPress: _ => this.downloadAll()
+        }
+      ], {cancelable: true})
+  }
+  deleteAll() {
+    this.setState({storageState: false})
+    Object.values(this.state.data).map(geofence => {
+      if (this.state.activeGeofenceIdentifier == geofence.identifier) {
+        return
+      }
+      const path = pathFromUri(geofence.uri)
+      RNFetchBlob.fs.exists(path).then(exists => {
+        exists && RNFetchBlob.fs.unlink(path)
+          .then(_ => {
+            console.log(`Deleted ${path}`)
+            this.setData(geofence.identifier, 'download', -1)
+          })
+      })
+    })
+    NetInfo.fetch().then(netState => {
+      if (!netState.isConnected) {
+        this.setState({'errorMessage': errors('networkError')})
+        this.stopGeolocation()
+      }
+    })
+    this.forceUpdate()
+  }
+  deleteAllAlert() {
+    Alert.alert(
+      'Warning',
+      'Delete all downloads?',
+      [
+        {
+          text: 'No',
+          style: 'cancel'
+        },
+        {
+          text: 'Yes',
+          onPress: _ => this.deleteAll()
+        }
+      ], {cancelable: true})
+  }
+  setData(identifier, key, value) {
+    this.setState(previousState => {
+      const data = { ...previousState.data }
+      data[identifier] = {
+        ...data[identifier]
+      }
+      data[identifier][key] = value
+      return { data }
+    })
+  }
+  toggleStorage() {
+    NetInfo.fetch().then(netStatus => {
+      if (this.state.storageState) {
+        this.deleteAllAlert()
+      } else {
+          if (netStatus.isConnected) {
+            if (netStatus.type !== 'wifi') {
+              this.downloadAllAlert()
+            } else {
+              this.downloadAll()
+            }
+          }
+      }
+    })
   }
   toggleGeolocation() {
     if (this.state.backgroundGeolocationRunning) {
       this.stopGeolocation()
     } else {
+      this.setState({idleMessage: idleMessage()})
       this.startGeolocation()
     }
-  }
-  toggleSattelite() {
-    this.state.satteliteView = !this.state.satteliteView
-  }
-  markerColor(identifier) {
-    if (identifier == this.state.activeGeofence) {
-      return 'rgba(255, 0, 0, .5)'
-    }
-    return 'rgba(225, 225, 225, .7)'
   }
   geofenceRadius(radius) {
     return radius / 2
@@ -248,55 +335,145 @@ export default class App extends React.Component {
   getMapStyle() {
     return configMap.mapStyle
   }
-  activeGeofenceTitle() {
-    if (this.state.activeGeofence) {
-      return this.state.data[this.state.activeGeofence].title
+  activeGeofence() {
+    return this.state.data[this.state.activeGeofenceIdentifier]
+  }
+  getInfo() {
+    let res = {}
+    if (this.state.activeGeofenceIdentifier) {
+      res = this.activeGeofence()
+    } else {
+      const keys = ['trackTitle',
+        'musicianName', 'address', 'sculptureTitle', 'artistName', 'year']
+      keys.map(key => res[key] = '')
+      res.trackTitle = this.state.idleMessage
     }
+    return res
   }
-  uri() {
-    return this.state.data[this.state.activeGeofence].uri
-  }
-  markerColors() {
-    const colors = {}
-    Object.keys(this.state.data).map(identifier => {
-      colors[identifier] = this.markerColor(identifier)
-    })
-    return colors
+  downloadThumbColor() {
+    if (this.state.downloadingAll) {
+      return '#FFB72D7F'
+    }
+    return this.state.storageState ? '#0A0' : '#ccc'
   }
   render() {
-    console.log("[render]")
-
+    if (!this.state.geofencesLoaded) {
+      return (
+        <View style={styles.splashscreen}>
+          <View style={{width: '100%', padding: 40}}>
+            <Text style={styles.splashTitle}>
+              Pèlerinage Sonore
+            </Text>
+            <ErrorMessage
+              title={this.state.errorMessage && this.state.errorMessage.title}
+              body={this.state.errorMessage && this.state.errorMessage.body}/>
+          </View>
+          { !this.state.errorMessage && (
+            <ActivityIndicator
+              style={{position: 'absolute', bottom: 40, right: 40}}
+              size="large" color="#FFB72D"/>
+          )}
+        </View>
+      )
+    }
+    const info = this.getInfo()
     return (
-      <>
-        <StatusBar barStyle="dark-content" />
-        <SafeAreaView>
-          <ScrollView>
-            <View style={styles.container}>
-              <Text>peso</Text>
-              <Text>{this.activeGeofenceTitle()}</Text>
-              <MapView
-                style={styles.map}
-                initialRegion={{
-                  latitude: 37.78825,
-                  longitude: -122.4324,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }}
-              />
-            </View>
-          </ScrollView>
-        </SafeAreaView>
-      </>
+      <View style={styles.container}>
+        <Map
+          data={this.state.data}
+          ref={ref => this.map = ref}
+          activeGeofenceIdentifier={this.state.activeGeofenceIdentifier}
+          onTouch={_ => this.setState({showAppInfo: false})}
+        />
+        <View style={styles.header}>
+          <View style={styles.appTitleContainer}>
+            <Pressable
+              style={styles.appTitle}
+              android_ripple={{color: 'B2DAD6'}}
+              onPress={_ => this.map.showAllMarkers()}>
+              <Text style={{fontWeight: 'bold', fontSize: 20}}>Pèlerinage Sonore</Text>
+            </Pressable>
+          </View>
+          <OfflineMode
+            onPress={_ => this.toggleStorage()}
+            color={this.downloadThumbColor()}
+            value={this.state.storageState}
+            disabled={this.state.downloadingAll}
+            data={this.state.data}
+          />
+        </View>
+        <View style={styles.footer}>
+          <View style={styles.options}>
+            <Pressable
+              disabled={this.state.errorMessage || this.state.downloadingAll}
+              onPress={_ => this.toggleGeolocation()}>
+              <View style={styles.switch}>
+                <Text style={styles.switchLabel}>Tracking</Text>
+                <Switch
+                  onValueChange={_ => this.toggleGeolocation()}
+                  disabled={true}
+                  thumbColor={this.state.backgroundGeolocationRunning ? '#4582F4' : '#ccc'}
+                  value={this.state.backgroundGeolocationRunning}/>
+              </View>
+            </Pressable>
+          </View>
+          <Pressable
+            onPress={_ => this.setState({showAppInfo: true})}
+            style={styles.info}>
+            { this.state.errorMessage && (
+              <ErrorMessage
+                title={this.state.errorMessage.title}
+                body={this.state.errorMessage.body}/>
+            )}
+            { !this.state.errorMessage &&
+                !this.state.backgroundGeolocationRunning && 
+                !this.state.downloadingAll && (
+              <AppInfo
+                collapse={!this.state.showAppInfo}
+                data={[
+                {content: 'An audio walk through Geneva', type: 'title'},
+                {content: 'The mobile device is located via GPS and it detects when it enters a target zone.', type: 'text'},
+                {content: 'On entry, an audio file is played.', type: 'text'},
+                {content: 'The audio file will be stopped once the device leaves the target zone.', type: 'text'},
+                {content: 'No user interaction is required apart from enabling the tracking and walking through Geneva.', type: 'text'},
+                {content: 'No User- or Tracking Information is sent to our server.', type: 'text'}
+              ]}/>
+            )}
+            { !this.state.errorMessage && this.state.backgroundGeolocationRunning && (
+            <Text style={[styles.infoItem, styles.infoTrackTitle]}>
+              {info.trackTitle}
+            </Text>
+            )}
+            { this.state.downloadingAll && !this.state.errorMessage && (
+              <>
+                <Text style={{fontWeight: 'bold'}}>Downloading...</Text>
+                <ActivityIndicator
+                style={{position: 'absolute', right: 15, top: 15}}
+                size="large" color="#FFB72D"/>
+              </>
+            ) }
+            { this.state.activeGeofenceIdentifier && (
+              <>
+            <Text style={[styles.infoItem, styles.infoMusicianName]}>
+              {info.musicianName}
+            </Text>
+            <Text style={[styles.infoItem, styles.infoAddress]}>
+              {info.address}
+            </Text>
+            <Text style={[styles.infoItem, styles.infoSculpture]}>
+              {info.sculptureTitle}, {info.artistName}, {info.year}
+            </Text>
+            {this.state.downloading && (
+              <ActivityIndicator
+              style={{position: 'absolute', right: 15, top: 15}}
+              size="large" color="#FFB72D"/>
+            )}
+              </>
+            )
+            }
+          </Pressable>
+        </View>
+      </View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: '100%'
-  },
-  map: {
-    width: '100%',
-    height: '100%'
-  }
-});

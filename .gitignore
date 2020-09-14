@@ -50,3 +50,5 @@ buck-out/
 
 # Bundle artifact
 *.jsbundle
+
+android/app/release/*

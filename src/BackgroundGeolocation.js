@@ -2,12 +2,13 @@ import BackgroundGeolocation from "react-native-background-geolocation";
 
 export const config = {
   desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-  distanceFilter: 10,
-  stopTimeout: 1,
+  distanceFilter: 0,
+  stopTimeout: 15,
   debug: false, // <-- enable this hear sounds for background-geolocation life-cycle.
   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-  stopOnTerminate: false,     // <-- Allow the background-service to continue tracking when user closes the app.
-  startOnBoot: true,                // <-- Auto start tracking when device is powered-up.
+  stopOnTerminate: true,     // <-- Allow the background-service to continue tracking when user closes the app.
+  startOnBoot: false,                // <-- Auto start tracking when device is powered-up.
+  forceReoloadOnGeofence: true,
   // HTTP / SQLite config
   url: 'http://yourserver.com/locations',
   batchSync: false,             // <-- [Default: false] Set true to sync locations to server in a single HTTP request.
@@ -18,5 +19,4 @@ export const config = {
   params: {                             // <-- Optional HTTP params
     "auth_token": "maybe_your_server_authenticates_via_token_YES?"
   }
-
 }
