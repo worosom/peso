@@ -5,7 +5,6 @@ import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
 import com.reactnativecommunity.rctaudiotoolkit.AudioPackage;
-import com.transistorsoft.rnbackgroundfetch.RNBackgroundFetchPackage;
 import com.transistorsoft.rnbackgroundgeolocation.RNBackgroundGeolocation;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactNativeHost;

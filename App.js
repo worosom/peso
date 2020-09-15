@@ -174,15 +174,22 @@ export default class App extends React.Component {
         console.log('Downloaded', path)
         this.setData(identifier, 'download', 1)
         this.setState({'downloading': false})
+        if (this.allDownloaded()) {
+          this.setState({storageState: true})
+        }
         if (this.state.activeGeofenceIdentifier) {
           this.player = new Player(path, this.playbackOptions)
           this.player.volume = 1
           this.player.play(_ => {
             console.log('Playing', path)
-            this.setData(this.state.activeGeofenceIdentifier, 'visited', true)
+            this.setData(identifier, 'visited', true)
           })
         }
-      }).catch(err => console.log(err))
+      }).catch(err => {
+        this.setData(identifier, 'visited', false)
+        this.setData(identifier, 'download', -1)
+        this.setState({'downloading': false})
+      })
     })
   }
   stop(cb) {
@@ -209,6 +216,10 @@ export default class App extends React.Component {
       })
     })
   }
+  allDownloaded() {
+    let downloaded = Object.values(this.state.data).map(g => g.download == 1)
+    return downloaded.every(_ => _)
+  }
   downloadAll() {
     this.setState({storageState: true})
     this.stop(_ => {
@@ -224,8 +235,7 @@ export default class App extends React.Component {
         download(geofence.uri)
           .then(_ => {
             this.setData(geofence.identifier, 'download', 1)
-            let downloaded = Object.values(this.state.data).map(g => g.download == 1)
-            downloaded = downloaded.every(_ => _)
+            const downloaded = this.allDownloaded()
             if (downloaded) {
               if (backgroundGeolocationRunning) {
                 this.startGeolocation()
@@ -235,9 +245,9 @@ export default class App extends React.Component {
           })
           .catch(err => {
             this.setState({
-              'storageState': false,
-              'downloadingAll': false,
-              'errorMessage': errors('networkError')
+              storageState: false,
+              downloadingAll: false,
+              errorMessage: errors('networkError')
             })
           })
       })
@@ -306,18 +316,21 @@ export default class App extends React.Component {
       return { data }
     })
   }
+  enableStorage() {
+    if (netStatus.isConnected) {
+      if (netStatus.type !== 'wifi') {
+        this.downloadAllAlert()
+      } else {
+        this.downloadAll()
+      }
+    }
+  }
   toggleStorage() {
     NetInfo.fetch().then(netStatus => {
       if (this.state.storageState) {
         this.deleteAllAlert()
       } else {
-          if (netStatus.isConnected) {
-            if (netStatus.type !== 'wifi') {
-              this.downloadAllAlert()
-            } else {
-              this.downloadAll()
-            }
-          }
+        this.enableStorage()
       }
     })
   }
@@ -362,7 +375,7 @@ export default class App extends React.Component {
         <View style={styles.splashscreen}>
           <View style={{width: '100%', padding: 40}}>
             <Text style={styles.splashTitle}>
-              Pèlerinage Sonore
+              Belvédère Sonore Geneva
             </Text>
             <ErrorMessage
               title={this.state.errorMessage && this.state.errorMessage.title}
@@ -391,7 +404,7 @@ export default class App extends React.Component {
               style={styles.appTitle}
               android_ripple={{color: 'B2DAD6'}}
               onPress={_ => this.map.showAllMarkers()}>
-              <Text style={{fontWeight: 'bold', fontSize: 20}}>Pèlerinage Sonore</Text>
+              <Text style={{fontWeight: 'bold', fontSize: 20}}>Belvédère Sonore Geneva</Text>
             </Pressable>
           </View>
           <OfflineMode
