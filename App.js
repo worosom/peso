@@ -316,7 +316,7 @@ export default class App extends React.Component {
       return { data }
     })
   }
-  enableStorage() {
+  enableStorage(netStatus) {
     if (netStatus.isConnected) {
       if (netStatus.type !== 'wifi') {
         this.downloadAllAlert()
@@ -330,7 +330,7 @@ export default class App extends React.Component {
       if (this.state.storageState) {
         this.deleteAllAlert()
       } else {
-        this.enableStorage()
+        this.enableStorage(netStatus)
       }
     })
   }
