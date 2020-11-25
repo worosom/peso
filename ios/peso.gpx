@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" xmlns:gpxx="http://www.garmin.com/xmlschemas/GpxExtensions/v3" xmlns:gpxtpx="http://www.garmin.com/xmlschemas/TrackPointExtension/v1" creator="mapstogpx.com" version="1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd http://www.garmin.com/xmlschemas/GpxExtensions/v3 http://www.garmin.com/xmlschemas/GpxExtensionsv3.xsd http://www.garmin.com/xmlschemas/TrackPointExtension/v1 http://www.garmin.com/xmlschemas/TrackPointExtensionv1.xsd">
+  <metadata>
+    <time>2020-11-23T12:52:46Z</time>
+  </metadata>
+  <wpt lat="46.196599"
+    lon="6.133991"></wpt>
+  <wpt lat="46.21802250712183"
+    lon="6.144812116222553"></wpt>
+  <wpt lat="46.224168783418826"
+    lon="6.151040993568709"></wpt>
+  <wpt lat="46.166897"
+    lon="6.132883"></wpt>
+  <wpt lat="46.20027758452786"
+    lon="6.157450758191861"></wpt>
+  <wpt lat="46.20217114444467"
+    lon="6.136209880908364"></wpt>
+  <wpt lat="46.209796703498654"
+    lon="6.141572062550915"></wpt>
+  <wpt lat="46.188333"
+    lon="6.115278"></wpt>
+  <wpt lat="46.20679709673465"
+    lon="6.146351720185792"></wpt>
+  <wpt lat="46.207584138122805"
+    lon="6.144264950151743"></wpt>
+</gpx>

@@ -1,0 +1,6 @@
+module Pods_peso_pesoTests {
+  umbrella header "Pods-peso-pesoTests-umbrella.h"
+
+  export *
+  module * { export * }
+}

@@ -1,5 +1,6 @@
 import {
-  StyleSheet
+  StyleSheet,
+  Platform
 } from 'react-native';
 
 export default styles = StyleSheet.create({
@@ -9,7 +10,7 @@ export default styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginTop: 15,
     marginLeft: 15,
-    marginBottom: 32
+    marginBottom: Platform.OS == 'ios' ? 38 : 32
   },
   appTitle: {
     paddingTop: 3,
@@ -37,7 +38,7 @@ export default styles = StyleSheet.create({
     bottom: 0,
   },
   info: {
-    justifyContent: 'center',
+    flex: 1,
     backgroundColor: 'white',
     elevation: 8,
     width: 250,
@@ -99,12 +100,14 @@ export default styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'column',
+    backgroundColor: '#e4022e'
   },
   splashTitle: {
     fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 10,
-    width: '100%'
+    width: '100%',
+    color: '#d0ccad'
   },
   downloadGroup: {
     position: 'absolute',

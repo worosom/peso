@@ -1,0 +1,6 @@
+module Pods_peso {
+  umbrella header "Pods-peso-umbrella.h"
+
+  export *
+  module * { export * }
+}

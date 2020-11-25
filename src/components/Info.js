@@ -1,7 +1,11 @@
 import React from 'react'
 import {
+  Dimensions,
   View,
-  Text
+  ScrollView,
+  Text,
+  Linking,
+  Pressable
 } from 'react-native';
 
 export default function Info(props) {
@@ -10,6 +14,14 @@ export default function Info(props) {
       {props.data.map((item, i) => {
         if (i == 0 || !props.collapse) {
           switch (item.type) {
+            case 'link':
+              return (
+                <Pressable
+                  key={`${i}-title`}
+                  onPress={ _ => Linking.openURL(item.url) }>
+                  <Text style={{color: 'blue', textDecorationLine: 'underline'}}>Privacy Policy</Text>
+                </Pressable>
+              )
             case 'title':
               return (
                 <Text

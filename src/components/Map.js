@@ -2,13 +2,22 @@ import React from 'react'
 import {
   View,
   Text,
-  Pressable
+  Pressable,
+  Platform
 } from 'react-native';
 import MapView from 'react-native-maps'
 import { Marker, Circle, Callout } from 'react-native-maps'
 import debounce from 'lodash.debounce'
 import MarkerIcon from './MarkerIcon.js'
 import MyLocation from '../assets/my-location.svg'
+
+const shadowStyle = {
+  shadowColor: '#000',
+  shadowOffset: {width: .125, height: .125},
+  shadowOpacity: 1,
+  shadowRadius: 2,
+  backgroundColor: 'white'
+}
 
 export default class Map extends React.Component {
   constructor(props) {
@@ -109,6 +118,7 @@ export default class Map extends React.Component {
           <Marker
             key={`${i}-marker`}
             coordinate={geofence}
+            centerOffset={{x: 0, y: -18}}
             title={geofence.trackTitle}
             description={geofence.musicianName}
             tracksViewChanges={true}
@@ -144,7 +154,7 @@ export default class Map extends React.Component {
         }
       </MapView>
       { this.state.userLocation && (
-      <View style={styles.locateButton}>
+      <View style={[styles.locateButton, shadowStyle]}>
         <Pressable
           style={{width: '100%', height: '100%', justifyContent: 'center', alignItems: 'center'}}
           android_ripple={{color: 'B2DAD6'}}
