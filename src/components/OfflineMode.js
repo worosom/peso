@@ -19,7 +19,7 @@ const shadowStyle = {
 export default function OfflineMode(props) {
   return (
     <View 
-      style={[styles.options, shadowStyle]}>
+      style={[styles.options, shadowStyle, {position: 'absolute', right: 0, top: 0}]}>
       <Pressable
         disabled={props.disabled}
         onPress={_ => props.onPress()}>

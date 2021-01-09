@@ -3,7 +3,8 @@ import {
   View,
   Text,
   Pressable,
-  Platform
+  Platform,
+  Dimensions
 } from 'react-native';
 import MapView from 'react-native-maps'
 import { Marker, Circle, Callout } from 'react-native-maps'
@@ -39,8 +40,16 @@ export default class Map extends React.Component {
 
   showAllMarkers(delay) {
     const fn = _ => {
+      const {width, height} = Dimensions.get('window')
+      const bottom = (width > height) ? height * .1 : height - height / 1.61803 + height * .0125
+      const edgePadding = {
+        top: height * .1,
+        right: width * .1,
+        bottom,
+        left: width * .1
+      }
       this.map.fitToCoordinates(Object.values(this.props.data), {
-        edgePadding: { top: 100, right: 50, bottom: 250, left: 50 },
+        edgePadding,
         animated: true,
       })
     }
@@ -52,10 +61,12 @@ export default class Map extends React.Component {
   }
 
   markerBorderColor(identifier) {
-    if (identifier == this.props.activeGeofenceIdentifier) {
-      return '#FF00004D'
-    }
     const geofence = this.props.data[identifier]
+    if (identifier == this.props.activeGeofenceIdentifier) {
+      if (geofence.download !== 0) {
+        return '#FF00004D'
+      }
+    }
     switch (geofence.download) {
       case -1:
         return '#4582F4EC'
@@ -68,29 +79,40 @@ export default class Map extends React.Component {
   
   markerColor(identifier) {
     const geofence = this.props.data[identifier]
-    if (geofence.download == -1) {
-      return '#4582F47F'
-    } else if (geofence.download == 0) {
-      return '#FFB72D7F'
-    }
     if (identifier == this.props.activeGeofenceIdentifier) {
-      return '#FF00004D'
+      if (geofence.download !== 0) {
+        return '#FF00004D'
+      }
     } else if (geofence.visited) {
       return '#FFFFFF7F'
+    }
+    switch (geofence.download) {
+      case -1:
+        return '#4582F47F'
+      case 0:
+        return '#FFB72D7F'
+      case 1:
+        return 'rgba(170, 255, 170, .3)'
     }
     return 'rgba(170, 255, 170, .3)'
   }
 
   markerIconColor(identifier) {
     const geofence = this.props.data[identifier]
-    if (geofence.download == -1) {
-      return '#4582F4FF'
-    } else if (geofence.download == 0) {
-      return '#FFB72DFF'
-    } if (identifier == this.props.activeGeofenceIdentifier) {
-      return '#FF0000FD'
+    if (identifier == this.props.activeGeofenceIdentifier) {
+      if (geofence.download !== 0) {
+        return '#FF0000FD'
+      }
     } else if (geofence.visited) {
       return '#00AA007F'
+    }
+    switch (geofence.download) {
+      case -1:
+        return '#4582F4FF'
+      case 0:
+        return '#FFB72DFF'
+      case 1:
+        return 'rgba(0, 180, 0, 1)'
     }
     return '#0A0'
   }
@@ -117,22 +139,23 @@ export default class Map extends React.Component {
         {Object.values(this.props.data).map((geofence, i) => (
           <Marker
             key={`${i}-marker`}
+            onPress={_ => this.props.onMarkerPress(geofence)}
+            stopPropagation={true}
             coordinate={geofence}
             centerOffset={{x: 0, y: -18}}
             title={geofence.trackTitle}
             description={geofence.musicianName}
             tracksViewChanges={true}
-            zIndex={1001}
+            zIndex={1001 + i}
           >
             <MarkerIcon
               width={28}
               height={40}
               fillColor={this.markerIconColor(geofence.identifier)}/>
-            <Callout tooltip={false}>
-              <View style={{width: 200, padding: 7}}>
-                <Text style={{fontWeight: 'bold'}}>{geofence.trackTitle}</Text>
-                <Text style={{fontStyle: 'italic', marginBottom: 5}}>{geofence.musicianName}</Text>
-                <Text>{geofence.address}</Text>
+            <Callout 
+              tooltip={true}>
+              <View style={{width: 0, height: 0}}>
+                <Text></Text>
               </View>
             </Callout>
           </Marker>
@@ -140,6 +163,8 @@ export default class Map extends React.Component {
         }
         {Object.values(this.props.data).map((geofence, i) => (
           <Circle
+            onPress={_  =>  this.props.onMarkerPress(geofence)}
+            stopPropagation={true}
             key={`${i}-circle`}
             center={geofence}
             radius={geofence.radius}

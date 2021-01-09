@@ -26,6 +26,7 @@ import {
   pathFromUri,
   download,
   onLocation,
+  onMotionChange,
   idleMessage,
   fetchGeofences,
   errors
@@ -35,9 +36,16 @@ import OfflineMode from './src/components/OfflineMode.js'
 import AppInfo from './src/components/Info.js'
 import ErrorMessage from './src/components/Error.js'
 
-const computeInfoHeight = () => {
-  const windowHeight = Dimensions.get('window').height
-  return windowHeight - windowHeight / 1.61803
+const computeInfoHeight = showAppInfo => {
+  if (!showAppInfo) {
+    return 66.5
+  }
+  const {height, width} = Dimensions.get('window')
+  if (height < width) {
+    return Math.min(0, height - 150)
+  } else {
+    return height - height / 1.61803
+  }
 }
 
 
@@ -53,7 +61,12 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
     this.player = new Player()
-    this.appStateChange = state => state == 'active' && this.forceUpdate()
+    this.appStateChange = state => {
+      state == 'active' && this.forceUpdate()
+      if (state == 'background') {
+        this.cancelDownloads()
+      }
+    }
     this.playbackOptions = {
       continuesToPlayInBackground: true,
       autoDestroy: false,
@@ -67,18 +80,24 @@ export default class App extends React.Component {
       backgroundGeolocationRunning: false,
       downloading: false,
       downloadingAll: false,
+      offlineButtonDisabled: false,
       activeGeofenceIdentifier: null,
       activeGeofenceDistance: null,
       data: {},
       errorMessage: null,
       idleMessage: idleMessage(),
-      showAppInfo: true
+      showAppInfo: true,
+      isMoving: true
     }
   }
   componentDidMount() {
-    BackgroundGeolocation.onLocation((event) => onLocation(event, this));
+    BackgroundGeolocation.onLocation(event => onLocation(event, this));
+    BackgroundGeolocation.onMotionChange(event => onMotionChange(event, this));
     AppState.addEventListener('change', this.appStateChange)
     NetInfo.addEventListener(netState => {
+      if (!this.state.geofencesLoaded && !this.state.geofencesLoading) {
+        this.fetchData(netState)
+      }
       if (this.state.geofencesLoaded) {
         if (!netState.isConnected && !this.state.storageState) {
           this.setState({'errorMessage': errors('networkError')})
@@ -88,41 +107,39 @@ export default class App extends React.Component {
         }
       }
     })
-    const loadFromStorage = _ => {
-      AsyncStorage.getItem('@data')
-        .then(data => JSON.parse(data))
-        .then(data => {
-          if (data) {
-            this.setState({geofencesLoading: false})
-            this.setup(data)
-          } else {
-            this.setState({'errorMessage': errors('TypeError: Network request failed')})
-          }
-        })
-        .catch(err => this.setState({'errorMessage': errors(String(err))}))
-    }
-    NetInfo.addEventListener(netState => {
-      if (!this.state.geofencesLoaded && !this.state.geofencesLoading) {
-        this.setState({geofencesLoading: true})
-        if (netState && netState.isConnected) {
-          fetchGeofences().then(data => {
-            this.setState({geofencesLoading: false, errorMessage: null})
-            this.setup(data)
-            AsyncStorage.setItem('@data', JSON.stringify(data))
-          }).catch(err => {
-            this.setState({
-              geofencesLoading: false,
-              errorMessage: errors('networkError')
-            }, _ => {
-              loadFromStorage()
-            })
-          })
+  }
+  loadFromStorage() {
+    AsyncStorage.getItem('@data')
+      .then(data => JSON.parse(data))
+      .then(data => {
+        if (data) {
+          this.setState({geofencesLoading: false})
+          this.setup(data)
         } else {
-          loadFromStorage()
-          this.setState({geofencesLoading: false, errorMessage: errors('networkError')})
+          this.setState({'errorMessage': errors('TypeError: Network request failed')})
         }
-      }
-    })
+      })
+      .catch(err => this.setState({'errorMessage': errors(String(err))}))
+  }
+  fetchData(netState) {
+    this.setState({geofencesLoading: true})
+    if (netState && netState.isConnected) {
+      fetchGeofences().then(data => {
+        this.setState({geofencesLoading: false, errorMessage: null})
+        this.setup(data)
+        AsyncStorage.setItem('@data', JSON.stringify(data))
+      }).catch(err => {
+        this.setState({
+          geofencesLoading: false,
+          errorMessage: errors('networkError')
+        }, _ => {
+          this.loadFromStorage()
+        })
+      })
+    } else {
+      this.loadFromStorage()
+      this.setState({geofencesLoading: false, errorMessage: errors('networkError')})
+    }
   }
   setup(data) {
     BackgroundGeolocation.ready(config, (state) => {
@@ -132,7 +149,7 @@ export default class App extends React.Component {
           ...g,
           longitude: Number(g.longitude),
           latitude: Number(g.latitude),
-          radius: Platform.OS === 'ios' ? Math.max(200, Number(g.radius)) : Number(g.radius),
+          radius: Number(g.radius),
           notifyOnEntry: true,
           notifyOnExit: true,
           download: -1,
@@ -191,6 +208,8 @@ export default class App extends React.Component {
         }
         if (this.state.activeGeofenceIdentifier) {
           this.player = new Player((Platform.OS === 'ios' ? 'file://' : '') + path, this.playbackOptions)
+          this.player.volume = 1
+          this.player.looping = true
           this.player.play(_ => {
             console.log('Playing', path)
             this.setData(identifier, 'visited', true)
@@ -225,8 +244,10 @@ export default class App extends React.Component {
         start()
       } else {
         Alert.alert(
-          'Background Geolocation',
-          'This app collects location data to enable audio playback in geneva even when the app is closed or not in use.',
+          'Start Geolocation',
+          `This app collects location data to enable audio playback in geneva even when the app is closed or not in use.
+No user or tracking information is sent to our servers.
+Please make sure that your phone always allows this, or else the app can not function properly.`,
           [
             {
               text: 'Cancel',
@@ -253,6 +274,10 @@ export default class App extends React.Component {
     let downloaded = Object.values(this.state.data).map(g => g.download == 1)
     return downloaded.every(_ => _)
   }
+  allDeleted() {
+    let deleted = Object.values(this.state.data).map(g => g.download == -1)
+    return deleted.every(_ => _)
+  }
   downloadAll() {
     this.setState({storageState: true})
     this.stop(_ => {
@@ -273,12 +298,13 @@ export default class App extends React.Component {
               if (backgroundGeolocationRunning) {
                 this.startGeolocation()
               }
-              this.setState({downloadingAll: false})
+              this.setState({offlineButtonDisabled: false, downloadingAll: false})
             }
           })
           .catch(err => {
             this.setState({
               storageState: false,
+              offlineButtonDisabled: false,
               downloadingAll: false,
               errorMessage: errors('networkError')
             })
@@ -301,6 +327,20 @@ export default class App extends React.Component {
         }
       ], {cancelable: true})
   }
+  cancelDownloads() {
+    Object.values(this.state.data).map(geofence => {
+      if (geofence.download == 0) {
+        const path = pathFromUri(geofence.uri)
+        RNFetchBlob.fs.exists(path).then(exists => {
+          exists && RNFetchBlob.fs.unlink(path)
+            .then(_ => {
+              console.log(`Deleted ${path}`)
+              this.setData(geofence.identifier, 'download', -1)
+            })
+        })
+      }
+    })
+  }
   deleteAll() {
     this.setState({storageState: false})
     Object.values(this.state.data).map(geofence => {
@@ -313,6 +353,10 @@ export default class App extends React.Component {
           .then(_ => {
             console.log(`Deleted ${path}`)
             this.setData(geofence.identifier, 'download', -1)
+            const allDeleted = this.allDeleted()
+            if (allDeleted) {
+              this.setState({offlineButtonDisabled: false})
+            }
           })
       })
     })
@@ -359,6 +403,7 @@ export default class App extends React.Component {
     }
   }
   toggleStorage() {
+    this.state.offlineButtonDisabled = true
     NetInfo.fetch().then(netStatus => {
       if (this.state.storageState) {
         this.deleteAllAlert()
@@ -389,7 +434,7 @@ export default class App extends React.Component {
     if (this.state.activeGeofenceIdentifier) {
       res = this.activeGeofence()
     } else {
-      const keys = ['trackTitle',
+      const keys = ['trackTitle', 'imageUri',
         'musicianName', 'address', 'sculptureTitle', 'artistName', 'year']
       keys.map(key => res[key] = '')
       res.trackTitle = this.state.idleMessage
@@ -401,6 +446,17 @@ export default class App extends React.Component {
       return '#FFB72D7F'
     }
     return this.state.storageState ? '#0A0' : '#ccc'
+  }
+  onMarkerPress(geofence) {
+    if (!this.player.isPlaying && !this.state.downloading) {
+      this.setState({activeGeofenceIdentifier: geofence.identifier})
+    }
+  }
+  onMapTouch() {
+    if (!this.player.isPlaying && !this.state.downloading) {
+      this.setState({showAppInfo: false, activeGeofenceIdentifier: null})
+      this.setState({idleMessage: idleMessage()})
+    }
   }
   render() {
     if (!this.state.geofencesLoaded) {
@@ -435,108 +491,111 @@ export default class App extends React.Component {
             data={this.state.data}
             ref={ref => this.map = ref}
             activeGeofenceIdentifier={this.state.activeGeofenceIdentifier}
-            onTouch={_ => this.setState({showAppInfo: false})}
+            onTouch={_ => this.onMapTouch()}
+            onMarkerPress={geofence => this.onMarkerPress(geofence)}
           />
-          <View style={styles.header}>
-            <View style={styles.appTitleContainer}>
-              <Pressable
-                style={[styles.appTitle, shadowStyle]}
-                android_ripple={{color: 'B2DAD6'}}
-                onPress={_ => this.map.showAllMarkers()}>
-                <Text style={{fontWeight: 'bold', fontSize: 20}}>Belvédère Sonore Geneva</Text>
-              </Pressable>
-            </View>
-            <OfflineMode
-              onPress={_ => this.toggleStorage()}
-              color={this.downloadThumbColor()}
-              value={this.state.storageState}
-              disabled={this.state.downloadingAll}
-              data={this.state.data}
-            />
+          <View style={styles.appTitleContainer}>
+            <Pressable
+              style={[styles.appTitle, shadowStyle]}
+              android_ripple={{color: 'B2DAD6'}}
+              onPress={_ => this.map.showAllMarkers()}>
+              <Text style={{fontWeight: 'bold', fontSize: 20, marginBottom: 5}}>Belvédère Sonore Geneva</Text>
+            </Pressable>
           </View>
-          <View style={styles.footer}>
-            <View
-              style={[styles.options, shadowStyle]}>
-              <Pressable
-                disabled={this.state.errorMessage || this.state.downloadingAll}
-                onPress={_ => this.toggleGeolocation()}>
-                <View style={styles.switch}>
-                  <Text style={styles.switchLabel}>Tracking</Text>
-                  <Switch
-                    onValueChange={_ => this.toggleGeolocation()}
-                    disabled={true}
-                    thumbColor={this.state.backgroundGeolocationRunning ? '#4582F4' : '#ccc'}
-                    value={this.state.backgroundGeolocationRunning}/>
-                </View>
-              </Pressable>
-            </View>
-            <View
-              style={[styles.info, shadowStyle]}
-              >
-            <ScrollView
-              style={{maxHeight: computeInfoHeight(), flex:1}}>
-              <Pressable
-                onPress={_ => this.setState({showAppInfo: true})}>
-                { this.state.errorMessage && (
-                  <ErrorMessage
-                    title={this.state.errorMessage.title}
-                    body={this.state.errorMessage.body}/>
-                )}
-                { !this.state.errorMessage &&
-                    !this.state.backgroundGeolocationRunning && 
-                    !this.state.downloadingAll && (
-                  <AppInfo
-                    collapse={!this.state.showAppInfo}
-                    data={[
-                    {content: 'Music for sculptures in Geneva', type: 'title'},
-                    {content: 'Belvédère Sonore allows you to access a hidden musical reality.', type: 'text'},
-                    {content: 'This geolocalization app makes you able to listen to the musical aura of a sculpture.', type: 'text'},
-                    {content: 'Activate the offline mode to temporarily download the audio files to your device if you don\'t have a constant internet connection on your mobile phone.', type: 'text'},
-                    {content: '(To delete the files, deactivate the offline mode.)', type: 'text'},
-                    {content: 'To activate the offline mode you need an internet connection.', type: 'text'},
-                    {content: 'To start your musical journey, activate the tracking mode and your device will play audio while you are in a target zone of a sculpture.', type: 'text'},
-                    {content: 'Green circle: music is loaded', type: 'text'},
-                    {content: 'Orange circle: music download in progress', type: 'text'},
-                    {content: 'Red circle: music is playing', type: 'text'},
-                    {content: 'No user or tracking information is sent to our server.', type: 'text'},
-                    {content: 'Privacy Policy', url: 'https://dispatchwork.info/peso/policy.html', type: 'link'}
-                  ]}/>
-                )}
-                { !this.state.errorMessage && this.state.backgroundGeolocationRunning && (
+          <OfflineMode
+            onPress={_ => this.toggleStorage()}
+            color={this.downloadThumbColor()}
+            value={this.state.storageState}
+            disabled={this.state.downloadingAll || this.state.offlineButtonDisabled}
+            data={this.state.data}
+          />
+          <View
+            style={[styles.options, shadowStyle, {position: 'absolute', bottom: 0}]}>
+            <Pressable
+              disabled={this.state.errorMessage || this.state.downloadingAll || this.state.offlineButtonDisabled}
+              onPress={_ => this.toggleGeolocation()}>
+              <View style={styles.switch}>
+                <Text style={styles.switchLabel}>Tracking</Text>
+                <Switch
+                  onValueChange={_ => this.toggleGeolocation()}
+                  disabled={true}
+                  thumbColor={this.state.backgroundGeolocationRunning ? '#4582F4' : '#ccc'}
+                  value={this.state.backgroundGeolocationRunning}/>
+              </View>
+            </Pressable>
+          </View>
+          <View
+            style={[styles.info, shadowStyle]}
+            >
+          <ScrollView
+            style={{maxHeight: computeInfoHeight(!!this.state.activeGeofenceIdentifier || this.state.showAppInfo), flex:1}}
+            scrollEnabled={!!this.state.activeGeofenceIdentifier || this.state.showAppInfo && !this.state.downloadingAll}
+          >
+            <Pressable
+              onPress={_ => this.setState({showAppInfo: true})}
+              style={{
+                paddingTop: 10,
+                paddingLeft: 10,
+                paddingRight: 10,
+                paddingBottom: 0,
+              }}>
+              { this.state.errorMessage && (
+                <ErrorMessage
+                  title={this.state.errorMessage.title}
+                  body={this.state.errorMessage.body}/>
+              )}
+              { !this.state.errorMessage &&
+                  !this.state.backgroundGeolocationRunning && 
+                  !this.state.activeGeofenceIdentifier &&
+                  !this.state.downloadingAll && (
+                <AppInfo
+                  collapse={!this.state.showAppInfo}
+                  data={require('./appContent.js').default}/>
+              )}
+              {!this.state.errorMessage && 
+                  (this.state.activeGeofenceIdentifier ||
+                  (!this.state.activeGeofenceIdentifier && this.state.backgroundGeolocationRunning)) &&
+                  !this.state.downloadingAll && (
+              <>
                 <Text style={[styles.infoItem, styles.infoTrackTitle]}>
                   {info.trackTitle}
                 </Text>
+                {!!info.imageUri && (
+                  <FitImage
+                    style={{marginTop: 5,  marginBottom: 5}}
+                    source={{uri: info.imageUri}}/>
                 )}
-                { this.state.activeGeofenceIdentifier && (
+                {!!this.state.activeGeofenceIdentifier && (
                   <>
-                <Text style={[styles.infoItem, styles.infoMusicianName]}>
-                  {info.musicianName}
-                </Text>
-                <Text style={[styles.infoItem, styles.infoAddress]}>
-                  {info.address}
-                </Text>
-                <Text style={[styles.infoItem, styles.infoSculpture]}>
-                  {info.sculptureTitle}, {info.artistName}, {info.year}
-                </Text>
-                {this.state.downloading && (
-                  <ActivityIndicator
-                  style={{position: 'absolute', right: 15, top: 15}}
-                  size="large" color="#FFB72D"/>
-                )}
+                  <Text style={[styles.infoItem, styles.infoMusicianName]}>
+                    {info.musicianName}
+                  </Text>
+                  <Text style={[styles.infoItem, styles.infoAddress]}>
+                    {info.address}
+                  </Text>
+                  <Text style={[styles.infoItem, styles.infoSculpture, {paddingBottom: 10}]}>
+                    {info.sculptureTitle}, {info.artistName}, {info.year}
+                  </Text>
                   </>
-                )
-                }
-              </Pressable>
-            </ScrollView>
-            { this.state.downloadingAll && !this.state.errorMessage && (
-              <>
-                <Text style={{fontWeight: 'bold'}}>Downloading...</Text>
+                )}
+                {this.state.downloading && (
                 <ActivityIndicator
-                style={{position: 'absolute', right: 15, top: 15}}
-                size="large" color="#FFB72D"/>
+                  style={{position: 'absolute', right: 10, top: 10}}
+                  size="small" color="#FFB72D"/>
+                )}
               </>
-            ) }
-            </View>
+              )
+              }
+              { this.state.downloadingAll && !this.state.errorMessage && (
+                <>
+                  <Text style={{fontWeight: 'bold', height: 50}}>Downloading...</Text>
+                  <ActivityIndicator
+                    style={{position: 'absolute', right: 15, top: 15}}
+                    size="large" color="#FFB72D"/>
+                </>
+              ) }
+            </Pressable>
+          </ScrollView>
           </View>
         </View>
       </SafeAreaView>

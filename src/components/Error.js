@@ -11,7 +11,7 @@ export default function Error(props) {
   const iconColor = props.splash ? '#FFB72D' : '#CC0000'
   const textColor = props.splash ? '#FFFFFF' : '#000000'
   return (
-    <View>
+    <View style={{paddingBottom: 10}}>
       <Text style={{fontWeight: 'bold', marginBottom: 10, color: textColor}}>{props.title}</Text>
       <Text style={{color: textColor}}>{props.body}</Text>
       {props.title && props.body && (

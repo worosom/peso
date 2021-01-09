@@ -87,26 +87,30 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2], isMiles = false) => {
 const geofences = {}
 
 export function onLocation(geolocation, self) {
-  if (!geolocation.coords) {
+  if (!self.state.isMoving || !geolocation.coords) {
     return
   }
   const data = Object.values(self.state.data)
   const distances = data.map(marker => {
     const a = [geolocation.coords.latitude, geolocation.coords.longitude]
     const b = [marker.latitude, marker.longitude]
-    const distance =  haversineDistance(a, b)
+    const distance = haversineDistance(a, b)
     if (distance < marker.radius) {
       if (self.state.activeGeofenceIdentifier !== marker.identifier) {
         self.state.activeGeofenceIdentifier = marker.identifier
         self.play()
       }
       // self.state.activeGeofenceDistance = distance
-      self.player.volume = Math.pow(1 - distance / marker.radius, 2)
+      // self.player.volume = Math.pow(1 - distance / marker.radius, 2)
     } else if (distance > marker.radius && self.state.activeGeofenceIdentifier === marker.identifier) {
       self.stop()
     }
     return distance
   })
+}
+
+export const onMotionChange = (event, self) => {
+  self.state.isMoving = event.isMoving
 }
 
 export function idleMessage() {

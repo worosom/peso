@@ -5,12 +5,9 @@ import {
 
 export default styles = StyleSheet.create({
   appTitleContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    marginTop: 15,
-    marginLeft: 15,
-    marginBottom: Platform.OS == 'ios' ? 38 : 32
+    position: 'absolute',
+    top: 15,
+    left: 15
   },
   appTitle: {
     paddingTop: 3,
@@ -43,10 +40,6 @@ export default styles = StyleSheet.create({
     elevation: 8,
     width: 250,
     minHeight: 66.5,
-    paddingTop: 20,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 20,
     position: 'absolute',
     right: 0,
     bottom: 0

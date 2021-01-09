@@ -139,8 +139,8 @@ android {
         applicationId "com.peso"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 9
-        versionName "1.6"
+        versionCode 16
+        versionName '2.2'
         manifestPlaceholders = [googleMapApiKey: googleMapApiKey, transistorsoftApiKey: transistorsoftApiKey]
 
     }
