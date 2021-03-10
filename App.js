@@ -36,18 +36,17 @@ import OfflineMode from './src/components/OfflineMode.js'
 import AppInfo from './src/components/Info.js'
 import ErrorMessage from './src/components/Error.js'
 
-const computeInfoHeight = showAppInfo => {
+const computeInfoHeight = (showAppInfo, isArtwork) => {
   if (!showAppInfo) {
     return 66.5
   }
   const {height, width} = Dimensions.get('window')
-  if (height < width) {
-    return Math.min(0, height - 150)
+  if (isArtwork || height < width) {
+    return Math.max(0, height - 125)
   } else {
-    return height - height / 1.61803
+    return height * .5
   }
 }
-
 
 const shadowStyle = {
   shadowColor: '#000',
@@ -91,6 +90,9 @@ export default class App extends React.Component {
     }
   }
   componentDidMount() {
+    Dimensions.addEventListener('change', () => {
+      this.forceUpdate()
+    });
     BackgroundGeolocation.onLocation(event => onLocation(event, this));
     BackgroundGeolocation.onMotionChange(event => onMotionChange(event, this));
     AppState.addEventListener('change', this.appStateChange)
@@ -528,7 +530,7 @@ Please make sure that your phone always allows this, or else the app can not fun
             style={[styles.info, shadowStyle]}
             >
           <ScrollView
-            style={{maxHeight: computeInfoHeight(!!this.state.activeGeofenceIdentifier || this.state.showAppInfo), flex:1}}
+            style={{maxHeight: computeInfoHeight(!!this.state.activeGeofenceIdentifier || this.state.showAppInfo, !!this.state.activeGeofenceIdentifier), flex:1}}
             scrollEnabled={!!this.state.activeGeofenceIdentifier || this.state.showAppInfo && !this.state.downloadingAll}
           >
             <Pressable
