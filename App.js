@@ -377,6 +377,7 @@ Please make sure that your phone always allows this, or else the app can not fun
       [
         {
           text: 'No',
+          onPress: () => this.state.offlineButtonDisabled = false,
           style: 'cancel'
         },
         {
