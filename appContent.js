@@ -1,16 +1,16 @@
 export default [
   {content: 'Music for sculptures in Geneva', type: 'title'},
-  {content: 'Belvédère Sonore allows you to access a hidden musical reality.', type: 'text'},
-  {content: 'Activate the offline mode to temporarily download the audio files to your device if you don\'t have a stable internet connection on your mobile phone.', type: 'text'},
-  {content: 'To activate the offline mode you need an internet connection.', type: 'text'},
-  {content: 'To delete the music, deactivate the offline mode.', type: 'text'},
-  {content: 'To start your musical journey, activate the tracking mode and your device will play audio while you are in a sculpture’s zone.', type: 'text'},
-  {content: `Blue circle: music is not loaded
-Green circle: music is loaded
-Orange circle: music download in progress
-Red circle: music is playing`, type: 'text'},
-  {content: 'No user or tracking information is sent to our server.', type: 'text'},
-  {content: 'For a better experience use headphones if it is safe.', type: 'text'},
+  {content: 'Belvédère Sonore allows you to access a hidden musical reality in Geneva.', type: 'text'},
+  {content: 'Getting started with your musical journey, it\'s simple.', type: 'text'},
+  {content: 'Activate the tracking mode on your device. When walking in a sculpture’s zone audio will be playing automatically. Enjoy. No user or tracking information is sent to our server.', type: 'text'},
+  {content: 'If you don’t have a stable internet connection please ACTIVATE THE OFFLINE MODE and let temporarily download the audio files to your device. (In order to do so, you need an internet connection. Prepare your experience in advance)', type: 'text'},
+  {content: `Please note the following visual chart:
+Blue circle - music is not loaded
+Green circle - music is loaded
+Orange circle - music download in progress
+Red circle - music is playing`, type: 'text'},
+  {content: 'To delete the music from your smartphone, simply deactivate the offline mode.', type: 'text'},
+  {content: 'Get a better experience, use your headphones.', type: 'text'},
   {content: 'Credits', url: 'http://www.zonoff.net/belvederesonore/index.php/credits/', type: 'link'},
   {content: 'zonoff.net', url: 'http://zonoff.net/', type: 'link'},
   {content: 'Privacy Policy', url: 'https://dispatchwork.info/peso/policy.html', type: 'link'}
