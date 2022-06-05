@@ -24,7 +24,9 @@ export default function OfflineMode(props) {
         disabled={props.disabled}
         onPress={_ => props.onPress()}>
         <View style={styles.switch}>
-          <Text style={styles.switchLabel}>Offline Mode</Text>
+          <Text 
+            style={[styles.switchLabel, {width: 70}]}
+          >{props.title}</Text>
           <Switch
             onValueChange={_ => props.onPress()}
             thumbColor={props.color}

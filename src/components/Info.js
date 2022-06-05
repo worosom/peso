@@ -7,12 +7,20 @@ import {
   Linking,
   Pressable
 } from 'react-native';
+import i18n from 'i18next'
+import { useTranslation } from 'react-i18next'
+import Markdown from 'react-native-markdown-display';
+
 
 export default function Info(props) {
-  const itemStyle = i => ({marginBottom: i == (props.data.length-1) ? 0 : 10})
+  const { t, i18n } = useTranslation();
+  const itemStyle = i => ({
+    marginBottom: i == (t('info', { returnObjects: true }).length-1) ? 0 : 10,
+    ...t('info', { returnObjects: true })[i].style
+  })
   return (
     <View style={{paddingBottom: 10}}>
-      {props.data.map((item, i) => {
+      {t('info', { returnObjects: true }).map((item, i) => {
         switch (item.type) {
           case 'link':
             return (
@@ -30,6 +38,16 @@ export default function Info(props) {
                 style={{fontWeight: 'bold', marginBottom: 10}}>
                 {item.content}
               </Text>
+            )
+          case 'markdown':
+            return (
+              <Markdown
+                key={`${i}-markdown`}
+                mergeStyle={true}
+                style={{paragraph: {marginTop: 0, marginBottom: 3}, ...itemStyle(i)}}
+              >
+                {item.content}
+              </Markdown>
             )
           default:
             return (

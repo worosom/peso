@@ -36,6 +36,11 @@ import OfflineMode from './src/components/OfflineMode.js'
 import AppInfo from './src/components/Info.js'
 import ErrorMessage from './src/components/Error.js'
 
+import './src/Translations'
+import i18n from 'i18next'
+import { withTranslation } from 'react-i18next'
+import * as RNLocalize from "react-native-localize";
+
 const computeInfoHeight = (showAppInfo, isArtwork) => {
   if (!showAppInfo) {
     return 66.5
@@ -44,7 +49,7 @@ const computeInfoHeight = (showAppInfo, isArtwork) => {
   if (isArtwork || height < width) {
     return Math.max(0, height - 125)
   } else {
-    return height * .5
+    return height * .4
   }
 }
 
@@ -55,8 +60,7 @@ const shadowStyle = {
   shadowRadius: .7,
 }
 
-
-export default class App extends React.Component {
+export default withTranslation()(class App extends React.Component {
   constructor(props) {
     super(props)
     this.player = new Player()
@@ -82,12 +86,14 @@ export default class App extends React.Component {
       offlineButtonDisabled: false,
       activeGeofenceIdentifier: null,
       activeGeofenceDistance: null,
+      visibleGeofenceIdentifier: null,
       data: {},
       errorMessage: null,
       idleMessage: idleMessage(),
       showAppInfo: true,
       isMoving: true
     }
+    i18n.changeLanguage(RNLocalize.getLocales()[0].languageCode)
   }
   componentDidMount() {
     Dimensions.addEventListener('change', () => {
@@ -184,8 +190,8 @@ export default class App extends React.Component {
       console.log('Active geofence is null')
       return
     }
-
     const identifier = this.state.activeGeofenceIdentifier
+    this.setState({visibleGeofenceIdentifier: identifier})
     const downloadState = this.state.data[identifier].download
     if (downloadState == 0) {
       return
@@ -213,6 +219,7 @@ export default class App extends React.Component {
           this.player.volume = 1
           this.player.looping = true
           this.player.play(_ => {
+            this.setState({idleMessage: idleMessage()})
             console.log('Playing', path)
             this.setData(identifier, 'visited', true)
           })
@@ -246,17 +253,15 @@ export default class App extends React.Component {
         start()
       } else {
         Alert.alert(
-          'Start Geolocation',
-          `This app collects location data to enable audio playback in geneva even when the app is closed or not in use.
-No user or tracking information is sent to our servers.
-Please make sure that your phone always allows this, or else the app can not function properly.`,
+          this.props.t('geolocationAlert.title'),
+          this.props.t('geolocationAlert.text'),
           [
             {
-              text: 'Cancel',
+              text: this.props.t('geolocationAlert.cancel'),
               style: 'cancel'
             },
             {
-              text: 'Enable tracking',
+              text: this.props.t('geolocationAlert.enable'),
               onPress: start
             }
           ], {cancelable: true})
@@ -280,51 +285,54 @@ Please make sure that your phone always allows this, or else the app can not fun
     let deleted = Object.values(this.state.data).map(g => g.download == -1)
     return deleted.every(_ => _)
   }
-  downloadAll() {
-    this.setState({storageState: true})
-    this.stop(_ => {
+  downloadAll(data = this.state.data) {
+    let toDownload = Object.keys(data).length
+    
+    //this.stop(_ => {
       this.setState({downloadingAll: true})
       const backgroundGeolocationRunning = this.state.backgroundGeolocationRunning
       if (backgroundGeolocationRunning)
         this.stopGeolocation()
-      Object.values(this.state.data).map(geofence => {
-        if (this.state.activeGeofenceIdentifier == geofence.identifier) {
+
+      Object.values(data).map(geofence => {
+        if (toDownload > 1 && this.state.activeGeofenceIdentifier == geofence.identifier || !geofence) {
           return
         }
         this.setData(geofence.identifier, 'download', 0)
         download(geofence.uri)
           .then(_ => {
             this.setData(geofence.identifier, 'download', 1)
-            const downloaded = this.allDownloaded()
+            if(this.allDownloaded()){ this.setState({storageState: true}) }
+
+            const downloaded = toDownload === 1 ? true : this.allDownloaded()
             if (downloaded) {
               if (backgroundGeolocationRunning) {
                 this.startGeolocation()
               }
               this.setState({offlineButtonDisabled: false, downloadingAll: false})
             }
+        }).catch(err => {
+          this.setState({
+            storageState: false,
+            offlineButtonDisabled: false,
+            downloadingAll: false,
+            errorMessage: errors('networkError')
           })
-          .catch(err => {
-            this.setState({
-              storageState: false,
-              offlineButtonDisabled: false,
-              downloadingAll: false,
-              errorMessage: errors('networkError')
-            })
-          })
+        })
       })
-    })
+    //})
   }
   downloadAllAlert() {
     Alert.alert(
-      'Download size ~100 Megabytes',
-      'WiFi connection recommended.',
+      this.props.t('downloadAll.title'),
+      this.props.t('downloadAll.text'),
       [
         {
-          text: 'Cancel',
+          text: this.props.t('downloadAll.cancel'),
           style: 'cancel'
         },
         {
-          text: 'Continue',
+          text: this.props.t('downloadAll.continue'),
           onPress: _ => this.downloadAll()
         }
       ], {cancelable: true})
@@ -343,10 +351,12 @@ Please make sure that your phone always allows this, or else the app can not fun
       }
     })
   }
-  deleteAll() {
+  deleteAll(data = this.state.data) {
+    let toDelete = Object.keys(data).length
     this.setState({storageState: false})
-    Object.values(this.state.data).map(geofence => {
-      if (this.state.activeGeofenceIdentifier == geofence.identifier) {
+
+    Object.values(data).map(geofence => {
+      if (toDelete > 1 && this.state.activeGeofenceIdentifier == geofence.identifier) {
         return
       }
       const path = pathFromUri(geofence.uri)
@@ -355,7 +365,7 @@ Please make sure that your phone always allows this, or else the app can not fun
           .then(_ => {
             console.log(`Deleted ${path}`)
             this.setData(geofence.identifier, 'download', -1)
-            const allDeleted = this.allDeleted()
+            const allDeleted = toDelete === 1 ? true : this.allDeleted()
             if (allDeleted) {
               this.setState({offlineButtonDisabled: false})
             }
@@ -372,16 +382,16 @@ Please make sure that your phone always allows this, or else the app can not fun
   }
   deleteAllAlert() {
     Alert.alert(
-      'Warning',
-      'Delete all downloads?',
+      this.props.t('deleteAll.title'),
+      this.props.t('deleteAll.text'),
       [
         {
-          text: 'No',
+          text: this.props.t('deleteAll.no'),
           onPress: () => this.state.offlineButtonDisabled = false,
           style: 'cancel'
         },
         {
-          text: 'Yes',
+          text: this.props.t('deleteAll.yes'),
           onPress: _ => this.deleteAll()
         }
       ], {cancelable: true})
@@ -416,10 +426,11 @@ Please make sure that your phone always allows this, or else the app can not fun
     })
   }
   toggleGeolocation() {
+    this.setState({idleMessage: idleMessage()})
+
     if (this.state.backgroundGeolocationRunning) {
       this.stopGeolocation()
     } else {
-      this.setState({idleMessage: idleMessage()})
       this.startGeolocation()
     }
   }
@@ -432,10 +443,13 @@ Please make sure that your phone always allows this, or else the app can not fun
   activeGeofence() {
     return this.state.data[this.state.activeGeofenceIdentifier]
   }
+  visibleGeofence() {
+    return this.state.data[this.state.visibleGeofenceIdentifier]
+  }
   getInfo() {
     let res = {}
-    if (this.state.activeGeofenceIdentifier) {
-      res = this.activeGeofence()
+    if (this.state.visibleGeofenceIdentifier) {
+      res = this.visibleGeofence()
     } else {
       const keys = ['trackTitle', 'imageUri',
         'musicianName', 'address', 'sculptureTitle', 'artistName', 'year']
@@ -451,15 +465,10 @@ Please make sure that your phone always allows this, or else the app can not fun
     return this.state.storageState ? '#0A0' : '#ccc'
   }
   onMarkerPress(geofence) {
-    if (!this.player.isPlaying && !this.state.downloading) {
-      this.setState({activeGeofenceIdentifier: geofence.identifier})
-    }
+    this.setState({visibleGeofenceIdentifier: geofence.identifier})
   }
   onMapTouch() {
-    if (!this.player.isPlaying && !this.state.downloading) {
-      this.setState({showAppInfo: false, activeGeofenceIdentifier: null})
-      this.setState({idleMessage: idleMessage()})
-    }
+    this.setState({showAppInfo: false, visibleGeofenceIdentifier: null})
   }
   render() {
     if (!this.state.geofencesLoaded) {
@@ -494,6 +503,7 @@ Please make sure that your phone always allows this, or else the app can not fun
             data={this.state.data}
             ref={ref => this.map = ref}
             activeGeofenceIdentifier={this.state.activeGeofenceIdentifier}
+            visibleGeofenceIdentifier={this.state.visibleGeofenceIdentifier}
             onTouch={_ => this.onMapTouch()}
             onMarkerPress={geofence => this.onMarkerPress(geofence)}
           />
@@ -511,6 +521,7 @@ Please make sure that your phone always allows this, or else the app can not fun
             value={this.state.storageState}
             disabled={this.state.downloadingAll || this.state.offlineButtonDisabled}
             data={this.state.data}
+            title={this.props.t('offline')}
           />
           <View
             style={[styles.options, shadowStyle, {position: 'absolute', bottom: 0}]}>
@@ -518,7 +529,7 @@ Please make sure that your phone always allows this, or else the app can not fun
               disabled={this.state.errorMessage || this.state.downloadingAll || this.state.offlineButtonDisabled}
               onPress={_ => this.toggleGeolocation()}>
               <View style={styles.switch}>
-                <Text style={styles.switchLabel}>Tracking</Text>
+                <Text style={styles.switchLabel}>{this.props.t('tracking')}</Text>
                 <Switch
                   onValueChange={_ => this.toggleGeolocation()}
                   disabled={true}
@@ -531,8 +542,8 @@ Please make sure that your phone always allows this, or else the app can not fun
             style={[styles.info, shadowStyle]}
             >
           <ScrollView
-            style={{maxHeight: computeInfoHeight(!!this.state.activeGeofenceIdentifier || this.state.showAppInfo, !!this.state.activeGeofenceIdentifier), flex:1}}
-            scrollEnabled={!!this.state.activeGeofenceIdentifier || this.state.showAppInfo && !this.state.downloadingAll}
+            style={{maxHeight: computeInfoHeight(!!this.state.visibleGeofenceIdentifier || this.state.showAppInfo, !!this.state.visibleGeofenceIdentifier), flex:1}}
+            scrollEnabled={!!this.state.visibleGeofenceIdentifier || this.state.showAppInfo && !this.state.downloadingAll}
           >
             <Pressable
               onPress={_ => this.setState({showAppInfo: true})}
@@ -549,36 +560,92 @@ Please make sure that your phone always allows this, or else the app can not fun
               )}
               { !this.state.errorMessage &&
                   !this.state.backgroundGeolocationRunning && 
-                  !this.state.activeGeofenceIdentifier &&
+                  !this.state.visibleGeofenceIdentifier &&
                   !this.state.downloadingAll && (
                 <AppInfo
-                  collapse={!this.state.showAppInfo}
-                  data={require('./appContent.js').default}/>
+                  collapse={!this.state.showAppInfo}/>
               )}
               {!this.state.errorMessage && 
-                  (this.state.activeGeofenceIdentifier ||
-                  (!this.state.activeGeofenceIdentifier && this.state.backgroundGeolocationRunning)) &&
+                  (this.state.visibleGeofenceIdentifier ||
+                  (!this.state.visibleGeofenceIdentifier && this.state.backgroundGeolocationRunning)) &&
                   !this.state.downloadingAll && (
               <>
-                <Text style={[styles.infoItem, styles.infoTrackTitle]}>
-                  {info.trackTitle}
-                </Text>
+                <View style={{flex: 1, flexDirection: 'row'}}>
+                  {this.state.visibleGeofenceIdentifier && (
+                    <View style={{flex: 1 }}>
+                      <FitImage 
+                        style={styles.iconSize}
+                        source={require('./src/assets/music.png')}
+                      />
+                    </View>
+                  )}
+                  <View style={{flex: 8 }}>
+                    <Text style={[styles.infoItem, styles.musicianName]}>
+                      {info.musicianName}
+                    </Text>
+                    <Text style={[styles.infoItem, styles.infoTrackTitle]}>
+                      {info.trackTitle}
+                    </Text>
+                  </View>
+                </View>
                 {!!info.imageUri && (
                   <FitImage
-                    style={{marginTop: 5,  marginBottom: 5}}
+                    style={{marginTop: 5,  marginBottom: 15}}
                     source={{uri: info.imageUri}}/>
                 )}
-                {!!this.state.activeGeofenceIdentifier && (
+                {!!this.state.visibleGeofenceIdentifier && (
                   <>
-                  <Text style={[styles.infoItem, styles.infoMusicianName]}>
-                    {info.musicianName}
-                  </Text>
-                  <Text style={[styles.infoItem, styles.infoAddress]}>
-                    {info.address}
-                  </Text>
-                  <Text style={[styles.infoItem, styles.infoSculpture, {paddingBottom: 10}]}>
-                    {info.sculptureTitle}, {info.artistName}, {info.year}
-                  </Text>
+                  <View style={{flex: 1, flexDirection: 'row'}}>
+                    <View style={{flex: 1}}>
+                      <FitImage 
+                        style={styles.iconSize}
+                        source={require('./src/assets/location.png')}
+                      />
+                    </View>
+                    <View style={{flex: 8 }}>
+                      <Text style={[styles.infoItem, styles.infoAddress]}>
+                        {info.address}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{flex: 1, flexDirection: 'row'}}>
+                    <View style={{flex: 1}}>
+                      <FitImage 
+                        style={styles.iconSize}
+                        source={require('./src/assets/view.png')}
+                      />
+                    </View>
+                    <View style={{flex: 8 }}>
+                      <Text style={[styles.infoItem, styles.infoSculpture]}>
+                        {info.artistName}
+                      </Text>
+                      <Text style={[styles.infoItem, styles.infoSculpture, styles.infoTrackTitle]}>
+                        {info.sculptureTitle} {info.year}
+                      </Text>
+                    </View>
+                  </View>
+                  </>
+                )}
+                {info.download == 1 && (
+                  <>
+                    <Pressable
+                      disabled={this.state.backgroundGeolocationRunning}
+                      onPress={ _ => this.deleteAll({0 : this.state.data[this.state.visibleGeofenceIdentifier]})}
+                      style={{flexDirection: 'row', justifyContent: 'space-around', padding: 10}}
+                    >
+                      <Text style={{ textDecorationLine: 'underline'}}>{this.props.t('remove')}</Text>
+                    </Pressable>
+                  </>
+                )}
+                {info.download == -1 && (
+                  <>
+                  <Pressable
+                    disabled={this.state.backgroundGeolocationRunning}
+                    onPress={ _ => this.downloadAll({0 : this.state.data[this.state.visibleGeofenceIdentifier]})} 
+                    style={{flexDirection: 'row', justifyContent: 'space-around', padding: 10}}
+                  >
+                    <Text style={{ textDecorationLine: 'underline'}}>{this.props.t('download')}</Text>
+                  </Pressable>
                   </>
                 )}
                 {this.state.downloading && (
@@ -604,4 +671,4 @@ Please make sure that your phone always allows this, or else the app can not fun
       </SafeAreaView>
     );
   }
-}
+})

@@ -39,7 +39,7 @@ export default styles = StyleSheet.create({
     backgroundColor: 'white',
     elevation: 8,
     width: 250,
-    minHeight: 66.5,
+    minHeight: 50,
     position: 'absolute',
     right: 0,
     bottom: 0
@@ -47,15 +47,20 @@ export default styles = StyleSheet.create({
   infoItem: {
   },
   infoTrackTitle: {
-    fontWeight: 'bold'
+    fontStyle: 'italic',
+    marginBottom: 10
   },
   infoMusicianName: {
-    marginBottom: 10
+    marginBottom: 5
   },
   infoAddress: {
     marginBottom: 10
   },
   infoSculpture: {
+  },
+  iconSize: {
+    height: 20, 
+    width: 20
   },
   options: {
     backgroundColor: 'white',

@@ -62,7 +62,10 @@ export default class Map extends React.Component {
 
   markerBorderColor(identifier) {
     const geofence = this.props.data[identifier]
-    if (identifier == this.props.activeGeofenceIdentifier) {
+    if (
+      identifier == this.props.activeGeofenceIdentifier ||
+      identifier == this.props.visibleGeofenceIdentifier
+    ) {
       if (geofence.download !== 0) {
         return '#FF00004D'
       }
@@ -79,7 +82,10 @@ export default class Map extends React.Component {
   
   markerColor(identifier) {
     const geofence = this.props.data[identifier]
-    if (identifier == this.props.activeGeofenceIdentifier) {
+    if (
+      identifier == this.props.activeGeofenceIdentifier ||
+      identifier == this.props.visibleGeofenceIdentifier
+    ) {
       if (geofence.download !== 0) {
         return '#FF00004D'
       }
@@ -99,7 +105,10 @@ export default class Map extends React.Component {
 
   markerIconColor(identifier) {
     const geofence = this.props.data[identifier]
-    if (identifier == this.props.activeGeofenceIdentifier) {
+    if (
+      identifier == this.props.activeGeofenceIdentifier ||
+      identifier == this.props.visibleGeofenceIdentifier
+    ) {
       if (geofence.download !== 0) {
         return '#FF0000FD'
       }
