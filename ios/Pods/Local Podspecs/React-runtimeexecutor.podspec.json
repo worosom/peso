@@ -1,9 +1,8 @@
 {
-  "name": "React-RCTText",
+  "name": "React-runtimeexecutor",
   "version": "0.68.2",
-  "summary": "A React component for displaying text.",
+  "summary": "-",
   "homepage": "https://reactnative.dev/",
-  "documentation_url": "https://reactnative.dev/docs/text",
   "license": "MIT",
   "authors": "Facebook, Inc. and its affiliates",
   "platforms": {
@@ -13,15 +12,10 @@
     "git": "https://github.com/facebook/react-native.git",
     "tag": "v0.68.2"
   },
-  "source_files": "**/*.{h,m}",
-  "preserve_paths": [
-    "package.json",
-    "LICENSE",
-    "LICENSE-docs"
-  ],
-  "header_dir": "RCTText",
+  "source_files": "**/*.{cpp,h}",
+  "header_dir": "ReactCommon",
   "dependencies": {
-    "React-Core/RCTTextHeaders": [
+    "React-jsi": [
       "0.68.2"
     ]
   }

@@ -1,5 +1,5 @@
 {
-  "name": "React-cxxreact",
+  "name": "React-logger",
   "version": "0.68.2",
   "summary": "-",
   "homepage": "https://reactnative.dev/",
@@ -17,39 +17,12 @@
   "exclude_files": "SampleCxxModule.*",
   "compiler_flags": "-DFOLLY_NO_CONFIG -DFOLLY_MOBILE=1 -DFOLLY_USE_LIBCPP=1 -Wno-comma -Wno-shorten-64-to-32 -Wno-documentation",
   "pod_target_xcconfig": {
-    "HEADER_SEARCH_PATHS": "\"$(PODS_ROOT)/boost\" \"$(PODS_ROOT)/RCT-Folly\" \"$(PODS_ROOT)/DoubleConversion\""
+    "HEADER_SEARCH_PATHS": ""
   },
-  "header_dir": "cxxreact",
+  "header_dir": "logger",
   "dependencies": {
-    "boost": [
-      "1.76.0"
-    ],
-    "DoubleConversion": [
-
-    ],
-    "RCT-Folly": [
-      "2021.06.28.00-v2"
-    ],
     "glog": [
 
-    ],
-    "React-jsinspector": [
-      "0.68.2"
-    ],
-    "React-callinvoker": [
-      "0.68.2"
-    ],
-    "React-runtimeexecutor": [
-      "0.68.2"
-    ],
-    "React-perflogger": [
-      "0.68.2"
-    ],
-    "React-jsi": [
-      "0.68.2"
-    ],
-    "React-logger": [
-      "0.68.2"
     ]
   }
 }

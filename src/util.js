@@ -87,12 +87,12 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2], isMiles = false) => {
 const geofences = {}
 
 export function onLocation(geolocation, self) {
-  if (!self.state.isMoving || !geolocation.coords) {
+  if (!geolocation.coords) {
     return
   }
   const data = Object.values(self.state.data)
   const distances = data.map(marker => {
-    const a = [geolocation.coords.latitude, geolocation.coords.longitude]
+    const a = [geolocation.latitude, geolocation.longitude]
     const b = [marker.latitude, marker.longitude]
     const distance = haversineDistance(a, b)
     if (distance < marker.radius) {
@@ -118,7 +118,7 @@ export function idleMessage() {
 }
 
 export async function fetchGeofences() {
-  const response = await fetch('https://pelerinage-sonore.net/peso.json')
+  const response = await fetch('https://pelerinage-sonore.netlify.app/peso.json')
   return await response.json()
 }
 

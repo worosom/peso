@@ -1,6 +1,7 @@
 {
   "name": "RNBackgroundGeolocation",
-  "version": "3.9.3",
+  "cocoapods_version": ">= 1.10.0",
+  "version": "4.7.2",
   "summary": "The most sophisticated cross-platform background location-tracking & geofencing module with battery-conscious motion-detection intelligence",
   "description": "Cross-platform background geolocation module for React Native with\nbattery-saving circular stationary-region monitoring and stop detection.",
   "homepage": "https://www.transistorsoft.com/shop/products/react-native-background-geolocation",
@@ -8,17 +9,17 @@
   "authors": "Chris Scott <chris@transistorsoft.com>",
   "source": {
     "git": "https://github.com/transistorsoft/react-native-background-geolocation.git",
-    "tag": "3.9.3"
+    "tag": "4.7.2"
   },
   "platforms": {
-    "ios": "8.0"
+    "ios": "9.0"
   },
   "dependencies": {
     "React-Core": [
 
     ],
     "CocoaLumberjack": [
-      "~> 3.6.1"
+      "~> 3.7.2"
     ]
   },
   "static_framework": true,
@@ -34,5 +35,5 @@
     "sqlite3",
     "z"
   ],
-  "vendored_frameworks": "ios/RNBackgroundGeolocation/TSLocationManager.framework"
+  "vendored_frameworks": "ios/RNBackgroundGeolocation/TSLocationManager.xcframework"
 }

@@ -4,10 +4,11 @@ buildscript {
     ext {
         googlePlayServicesLocationVersion = "17.0.0"
         buildToolsVersion = "29.0.2"
-        minSdkVersion = 19
-        compileSdkVersion = 29
-        targetSdkVersion = 30
+        minSdkVersion = 24
+        compileSdkVersion = 31
+        targetSdkVersion = 31
         appCompatVersion = "1.0.2"
+        kotlinVersion = "1.5.0"
     }
     repositories {
         google()
@@ -15,7 +16,7 @@ buildscript {
     }
     dependencies {
         classpath('com.android.tools.build:gradle:4.1.1')
-
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
     }
@@ -36,10 +37,6 @@ allprojects {
         google()
         jcenter()
         maven { url 'https://www.jitpack.io' }
-        maven {
-            // Required for react-native-background-geolocation
-            url("${project(':react-native-background-geolocation').projectDir}/libs")
-        }
         maven {
             // Required for react-native-background-fetch
             url("${project(':react-native-background-fetch').projectDir}/libs")
