@@ -10,12 +10,13 @@ import {
   AppState,
   ActivityIndicator,
   Alert,
+  Platform,
 } from 'react-native'
 import AsyncStorage from '@react-native-community/async-storage'
 import NetInfo from '@react-native-community/netinfo'
 import BackgroundService from 'react-native-background-actions'
 import Geolocation from 'react-native-geolocation-service'
-import kudioRecorderPlayer from 'react-native-audio-recorder-player'
+import TrackPlayer, { RepeatMode } from 'react-native-track-player'
 import RNFetchBlob from 'rn-fetch-blob'
 import FitImage from 'react-native-fit-image'
 import configMap from './src/components/Map.js'
@@ -40,12 +41,12 @@ import { withTranslation } from 'react-i18next'
 import * as RNLocalize from 'react-native-localize'
 
 
-const sleep = (time) => new Promise((resolve) => setTimeout(() => resolve(), time));
+const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time))
 
 const veryIntensiveTask = async that => {
   // Example of an infinite loop task
   await new Promise(async resolve => {
-    for (let i = 0; BackgroundService.isRunning(); i++) {
+    while (BackgroundService.isRunning()) {
       Geolocation.getCurrentPosition(geolocation => {
         onLocation(geolocation, that)
       })
@@ -67,7 +68,7 @@ const options = {
   parameters: {
     delay: 1000,
   },
-};
+}
 
 
 const computeInfoHeight = (showAppInfo, isArtwork) => {
@@ -93,7 +94,6 @@ export default withTranslation()(
   class App extends React.Component {
     constructor(props) {
       super(props)
-      // this.player = new AudioRecorderPlayer()
       this.appStateChange = state => {
         state === 'active' && this.forceUpdate()
         if (state === 'background') {
@@ -119,7 +119,14 @@ export default withTranslation()(
       }
       i18n.changeLanguage(RNLocalize.getLocales()[0].languageCode)
     }
-    componentDidMount() {
+    async componentDidMount() {
+      BackgroundService.stop()
+      TrackPlayer.stop()
+      try {
+        await TrackPlayer.setupPlayer()
+      } catch {
+        console.log('TrackPlayer already set up')
+      }
       Dimensions.addEventListener('change', () => {
         this.forceUpdate()
       })
@@ -132,23 +139,29 @@ export default withTranslation()(
         }
         if (this.state.geofencesLoaded) {
           if (!netState.isConnected && !this.state.storageState) {
-            this.setState({'errorMessage': errors('networkError')})
+            this.setState({ errorMessage: errors('networkError') })
             this.stopGeolocation()
           } else if (netState.isConnected) {
-            this.setState({'errorMessage': null})
+            this.setState({ errorMessage: null })
           }
         }
       })
+    }
+    componentWillUnmount() {
+      TrackPlayer.stop()
+      BackgroundService.stop()
+      AppState.removeEventListener('change', this.appStateChange)
+      this.stopGeolocation()
     }
     loadFromStorage() {
       AsyncStorage.getItem('@data')
         .then(data => JSON.parse(data))
         .then(data => {
           if (data) {
-            this.setState({geofencesLoading: false})
+            this.setState({ geofencesLoading: false })
             this.setup(data)
           } else {
-            this.setState({'errorMessage': errors('TypeError: Network request failed')})
+            this.setState({ errorMessage: errors('TypeError: Network request failed') })
           }
         })
         .catch(err => this.setState({'errorMessage': errors(String(err))}))
@@ -173,7 +186,7 @@ export default withTranslation()(
         this.setState({geofencesLoading: false, errorMessage: errors('networkError')})
       }
     }
-    setup(data) {
+    async setup(data) {
       data.geofence.map((g, i) => {
         this.state.data[g.identifier] = {
           ...g,
@@ -198,68 +211,62 @@ export default withTranslation()(
       })
       this.setState({ geofencesLoaded: true })
     }
-    componentWillUnmount() {
-      AppState.removeEventListener('change', this.appStateChange)
-      this.stopGeolocation()
-      if (this.player) {
-        this.player.stopPlayer()
-      }
-    }
-    play() {
+    async play() {
       if (!this.state.activeGeofenceIdentifier) {
         console.log('Active geofence is null')
         return
       }
       const identifier = this.state.activeGeofenceIdentifier
-      this.setState({visibleGeofenceIdentifier: identifier})
+      this.setState({ visibleGeofenceIdentifier: identifier })
       const downloadState = this.state.data[identifier].download
-      if (downloadState == 0) {
+      if (downloadState === 0) {
         return
       }
-      this.player.stopPlayer().then(_ => {
-        if (!this.state.activeGeofenceIdentifier) {
-          console.log('Active geofence is null')
-          return
+      await TrackPlayer.stop()
+      if (!this.state.activeGeofenceIdentifier) {
+        console.log('Active geofence is null')
+        return
+      }
+      const uri = this.activeGeofence().uri
+      if (this.activeGeofence().download == -1) {
+        this.setData(identifier, 'download', 0)
+        this.setState({ downloading: true })
+      }
+      try {
+        const res = await download(uri)
+        const path = res.path()
+        console.log('Downloaded', path)
+        this.setData(identifier, 'download', 1)
+        this.setState({ downloading: false })
+        if (this.allDownloaded()) {
+          this.setState({ storageState: true })
         }
-        const uri = this.activeGeofence().uri
-        if (this.activeGeofence().download == -1) {
-          this.setData(identifier, 'download', 0)
-          this.setState({'downloading': true})
+        if (this.state.activeGeofenceIdentifier) {
+          const track = {
+            url: (Platform.OS === 'ios' ? 'file://' : '') + path, // Load media from the network
+          }
+          await TrackPlayer.add(track)
+          TrackPlayer.setRepeatMode(RepeatMode.Track)
+          TrackPlayer.play()
         }
-        download(uri).then(res => {
-          const path = res.path()
-          console.log('Downloaded', path)
-          this.setData(identifier, 'download', 1)
-          this.setState({'downloading': false})
-          if (this.allDownloaded()) {
-            this.setState({storageState: true})
-          }
-          if (this.state.activeGeofenceIdentifier) {
-            const fileUri = (Platform.OS === 'ios' ? 'file://' : '') + path
-            this.player.setVolume(1)
-            this.player.startPlayer(fileUri).then(_ => {
-              this.setState({idleMessage: idleMessage()})
-              console.log('Playing', path)
-              this.setData(identifier, 'visited', true)
-            })
-          }
-        }).catch(err => {
-          this.setData(identifier, 'visited', false)
-          this.setData(identifier, 'download', -1)
-          this.setState({'downloading': false})
-        })
-      })
+      } catch (err) {
+        this.setData(identifier, 'visited', false)
+        this.setData(identifier, 'download', -1)
+        this.setState({ downloading: false })
+      }
     }
     stop(cb) {
-      this.player.stopPlayer().then(_ => {
-        this.setState({ activeGeofenceIdentifier: null })
-        cb && cb()
-      })
+      console.log('stop')
+      TrackPlayer.stop()
+      this.setState({ activeGeofenceIdentifier: null })
+      cb && cb()
     }
     startGeolocation() {
       const start = _ => {
-
-        BackgroundService.start(async () => veryIntensiveTask(this), options).then(() => {
+        BackgroundService.start(
+          async () => veryIntensiveTask(this),
+          options,
+        ).then(() => {
           this.setState({ backgroundGeolocationRunning: true })
           AsyncStorage.setItem('@geolocationAlertShown', 'true')
         })
@@ -286,11 +293,10 @@ export default withTranslation()(
     }
     stopGeolocation(cb) {
       this.stop(_ => {
-        BackgroundService.stop().then(() => {
-          console.log('Stopped Geolocation')
-          this.setState({ backgroundGeolocationRunning: false })
-          cb && cb()
-        })
+        BackgroundService.stop()
+        console.log('Stopped Geolocation')
+        this.setState({ backgroundGeolocationRunning: false })
+        cb && cb()
       })
     }
     allDownloaded() {

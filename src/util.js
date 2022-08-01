@@ -1,4 +1,5 @@
 import RNFetchBlob from 'rn-fetch-blob'
+import TrackPlayer, { State } from 'react-native-track-player'
 
 export const dirs = RNFetchBlob.fs.dirs
 
@@ -92,7 +93,7 @@ export function onLocation(geolocation, self) {
   }
   const data = Object.values(self.state.data)
   const distances = data.map(marker => {
-    const a = [geolocation.latitude, geolocation.longitude]
+    const a = [geolocation.coords.latitude, geolocation.coords.longitude]
     const b = [marker.latitude, marker.longitude]
     const distance = haversineDistance(a, b)
     if (distance < marker.radius) {
@@ -102,7 +103,7 @@ export function onLocation(geolocation, self) {
       }
       // self.state.activeGeofenceDistance = distance
       // self.player.volume = Math.pow(1 - distance / marker.radius, 2)
-    } else if (distance > marker.radius && self.state.activeGeofenceIdentifier === marker.identifier) {
+    } else if (distance > marker.radius) {
       self.stop()
     }
     return distance
