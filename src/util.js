@@ -40,10 +40,10 @@ export function onGeofence(geofence, self) {
     return
   }
 
-  if ('ENTER' == geofence.action) {
+  if ('ENTER' === geofence.action) {
     self.state.activeGeofenceIdentifier = geofence.identifier
     self.play()
-  } else if (geofence.identifier == self.state.activeGeofenceIdentifier) {
+  } else if (geofence.identifier === self.state.activeGeofenceIdentifier) {
     self.stop()
   }
   self.forceUpdate()
@@ -87,27 +87,33 @@ const haversineDistance = ([lat1, lon1], [lat2, lon2], isMiles = false) => {
 
 const geofences = {}
 
-export function onLocation(geolocation, self) {
+export function onLocation(geolocation) {
   if (!geolocation.coords) {
     return
   }
-  const data = Object.values(self.state.data)
-  const distances = data.map(marker => {
-    const a = [geolocation.coords.latitude, geolocation.coords.longitude]
-    const b = [marker.latitude, marker.longitude]
-    const distance = haversineDistance(a, b)
-    if (distance < marker.radius) {
-      if (self.state.activeGeofenceIdentifier !== marker.identifier) {
-        self.state.activeGeofenceIdentifier = marker.identifier
-        self.play()
+  const data = Object.values(this.state.data)
+  const a = [geolocation.coords.latitude, geolocation.coords.longitude]
+  const distances = data.map(marker => haversineDistance(a, [marker.latitude, marker.longitude]))
+  const activeMarkers = distances.map(
+    (distance, i) => distance < data[i].radius,
+  )
+  const indices = activeMarkers.flatMap((bool, index) => bool ? index : [])
+  if (indices.length) {
+    const identifier = data[indices[0]].identifier
+    if (this.state.activeGeofenceIdentifier === identifier) {
+      return
+    } else {
+      if (this.state.activeGeofenceIdentifier !== null) {
+        this.stop()
       }
-      // self.state.activeGeofenceDistance = distance
-      // self.player.volume = Math.pow(1 - distance / marker.radius, 2)
-    } else if (distance > marker.radius) {
-      self.stop()
+      this.state.activeGeofenceIdentifier = identifier
+      this.play()
+      return
     }
-    return distance
-  })
+  } else {
+    this.stop()
+    return
+  }
 }
 
 export const onMotionChange = (event, self) => {

@@ -43,18 +43,6 @@ import * as RNLocalize from 'react-native-localize'
 
 const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time))
 
-const veryIntensiveTask = async that => {
-  // Example of an infinite loop task
-  await new Promise(async resolve => {
-    while (BackgroundService.isRunning()) {
-      Geolocation.getCurrentPosition(geolocation => {
-        onLocation(geolocation, that)
-      })
-      await sleep(1000)
-    }
-  })
-}
-
 const options = {
   taskName: 'Example',
   taskTitle: 'ExampleTask title',
@@ -130,8 +118,6 @@ export default withTranslation()(
       Dimensions.addEventListener('change', () => {
         this.forceUpdate()
       })
-      // BackgroundGeolocation.onLocation(event => onLocation(event, this))
-      // BackgroundGeolocation.onMotionChange(event => onMotionChange(event, this))
       AppState.addEventListener('change', this.appStateChange)
       NetInfo.addEventListener(netState => {
         if (!this.state.geofencesLoaded && !this.state.geofencesLoading) {
@@ -212,23 +198,20 @@ export default withTranslation()(
       this.setState({ geofencesLoaded: true })
     }
     async play() {
-      if (!this.state.activeGeofenceIdentifier) {
-        console.log('Active geofence is null')
+      const identifier = this.state.activeGeofenceIdentifier
+      console.log(`Active geofence is ${identifier}`)
+      if (identifier === null) {
+        this.stop()
         return
       }
-      const identifier = this.state.activeGeofenceIdentifier
       this.setState({ visibleGeofenceIdentifier: identifier })
       const downloadState = this.state.data[identifier].download
       if (downloadState === 0) {
         return
       }
       await TrackPlayer.stop()
-      if (!this.state.activeGeofenceIdentifier) {
-        console.log('Active geofence is null')
-        return
-      }
       const uri = this.activeGeofence().uri
-      if (this.activeGeofence().download == -1) {
+      if (this.activeGeofence().download === -1) {
         this.setData(identifier, 'download', 0)
         this.setState({ downloading: true })
       }
@@ -245,6 +228,7 @@ export default withTranslation()(
           const track = {
             url: (Platform.OS === 'ios' ? 'file://' : '') + path, // Load media from the network
           }
+          await TrackPlayer.reset()
           await TrackPlayer.add(track)
           TrackPlayer.setRepeatMode(RepeatMode.Track)
           TrackPlayer.play()
@@ -256,15 +240,26 @@ export default withTranslation()(
       }
     }
     stop(cb) {
-      console.log('stop')
+      // console.log('stop')
       TrackPlayer.stop()
       this.setState({ activeGeofenceIdentifier: null })
       cb && cb()
     }
+    async backgroundService() {
+      const cb = onLocation.bind(this)
+      await new Promise(async resolve => {
+        while (BackgroundService.isRunning()) {
+          Geolocation.getCurrentPosition(geolocation => {
+            cb(geolocation)
+          })
+          await sleep(1000)
+        }
+      })
+    }
     startGeolocation() {
       const start = _ => {
         BackgroundService.start(
-          async () => veryIntensiveTask(this),
+          async () => await this.backgroundService(),
           options,
         ).then(() => {
           this.setState({ backgroundGeolocationRunning: true })

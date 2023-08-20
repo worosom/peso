@@ -52,3 +52,5 @@ buck-out/
 *.jsbundle
 
 android/app/release/*
+
+peso

@@ -48,7 +48,7 @@ export default class Map extends React.Component {
         bottom,
         left: width * .1
       }
-      this.map.fitToCoordinates(Object.values(this.props.data), {
+      this.map?.fitToCoordinates(Object.values(this.props.data), {
         edgePadding,
         animated: true,
       })
