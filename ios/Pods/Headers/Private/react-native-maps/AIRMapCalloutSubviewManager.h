@@ -1,1 +1,1 @@
-../../../../../node_modules/react-native-maps/lib/ios/AirMaps/AIRMapCalloutSubviewManager.h
+../../../../../node_modules/react-native-maps/ios/AirMaps/AIRMapCalloutSubviewManager.h

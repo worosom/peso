@@ -1,1 +1,1 @@
-../../../../../node_modules/react-native-maps/lib/ios/AirMaps/AIRMapLocalTileManager.h
+../../../../../node_modules/react-native-maps/ios/AirMaps/AIRMapLocalTileManager.h

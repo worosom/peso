@@ -8,14 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* pesoTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* pesoTests.m */; };
-		0754AEE609ADA01A6459A4E8 /* libPods-peso.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5F455E63AF8DA08F6E06049E /* libPods-peso.a */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
 		13B07FBD1A68108700A75B9A /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB11A68108700A75B9A /* LaunchScreen.xib */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		3B5B1A3189D0674B475229DC /* libPods-peso-pesoTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C893E1CB45A45C55E66EFEB7 /* libPods-peso-pesoTests.a */; };
 		D7E8655D2521D460005EA0AB /* ICONE_512PX.png in Resources */ = {isa = PBXBuildFile; fileRef = D7E8655C2521D460005EA0AB /* ICONE_512PX.png */; };
 		D7E865682521D6D6005EA0AB /* ACCUEIL_1024PX.png in Resources */ = {isa = PBXBuildFile; fileRef = D7E865672521D6D6005EA0AB /* ACCUEIL_1024PX.png */; };
+		E01C8D975DC50FE549731BCD /* libPods-peso-pesoTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 84157A22DC181017B6B9392A /* libPods-peso-pesoTests.a */; };
+		F16861810CDBC5B3D4FEFD01 /* libPods-peso.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B608C64FE5401A42126D45F3 /* libPods-peso.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -40,20 +40,16 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = peso/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = peso/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = peso/main.m; sourceTree = "<group>"; };
-		1BEC7929FAD9ACB12397FAC6 /* Pods-peso.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso.debug.xcconfig"; path = "Target Support Files/Pods-peso/Pods-peso.debug.xcconfig"; sourceTree = "<group>"; };
-		1DBCAB420C6EC32134C90A18 /* Pods-peso-pesoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-pesoTests.release.xcconfig"; path = "Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests.release.xcconfig"; sourceTree = "<group>"; };
-		24430BAF6B7BE8D4BADA117A /* Pods-peso-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-peso-tvOS/Pods-peso-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
-		2C4866FE5F6F2F49BC2A8A3D /* Pods-peso-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-tvOS.release.xcconfig"; path = "Target Support Files/Pods-peso-tvOS/Pods-peso-tvOS.release.xcconfig"; sourceTree = "<group>"; };
-		44ECF61D6A6355D883E13BBB /* Pods-peso-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-peso-tvOSTests/Pods-peso-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
-		5F455E63AF8DA08F6E06049E /* libPods-peso.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-peso.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		6C824D31A2D7F55FC11DEB28 /* Pods-peso.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso.release.xcconfig"; path = "Target Support Files/Pods-peso/Pods-peso.release.xcconfig"; sourceTree = "<group>"; };
-		C656295E46A47D3BC03433D1 /* Pods-peso-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-peso-tvOSTests/Pods-peso-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
-		C893E1CB45A45C55E66EFEB7 /* libPods-peso-pesoTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-peso-pesoTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
-		C9A136E2A077A6E3CC04A762 /* Pods-peso-pesoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-pesoTests.debug.xcconfig"; path = "Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests.debug.xcconfig"; sourceTree = "<group>"; };
+		4B8838F113221AE58A31CC76 /* Pods-peso-pesoTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-pesoTests.release.xcconfig"; path = "Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests.release.xcconfig"; sourceTree = "<group>"; };
+		84157A22DC181017B6B9392A /* libPods-peso-pesoTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-peso-pesoTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9EDF7D53EB5C3D6B85E4CAE1 /* Pods-peso.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso.release.xcconfig"; path = "Target Support Files/Pods-peso/Pods-peso.release.xcconfig"; sourceTree = "<group>"; };
+		B608C64FE5401A42126D45F3 /* libPods-peso.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-peso.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		D7E8655C2521D460005EA0AB /* ICONE_512PX.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ICONE_512PX.png; sourceTree = "<group>"; };
 		D7E865672521D6D6005EA0AB /* ACCUEIL_1024PX.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ACCUEIL_1024PX.png; sourceTree = "<group>"; };
+		E3AFA3CDBA87A25E5E75855C /* Pods-peso-pesoTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso-pesoTests.debug.xcconfig"; path = "Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests.debug.xcconfig"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		ED2971642150620600B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS12.0.sdk/System/Library/Frameworks/JavaScriptCore.framework; sourceTree = DEVELOPER_DIR; };
+		FAF2EDBC9B8FE12BB0AA00E6 /* Pods-peso.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-peso.debug.xcconfig"; path = "Target Support Files/Pods-peso/Pods-peso.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,7 +57,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3B5B1A3189D0674B475229DC /* libPods-peso-pesoTests.a in Frameworks */,
+				E01C8D975DC50FE549731BCD /* libPods-peso-pesoTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -69,7 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0754AEE609ADA01A6459A4E8 /* libPods-peso.a in Frameworks */,
+				F16861810CDBC5B3D4FEFD01 /* libPods-peso.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,14 +108,10 @@
 		17763C1B9E0D4A3FB02ACFF0 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				1BEC7929FAD9ACB12397FAC6 /* Pods-peso.debug.xcconfig */,
-				6C824D31A2D7F55FC11DEB28 /* Pods-peso.release.xcconfig */,
-				C9A136E2A077A6E3CC04A762 /* Pods-peso-pesoTests.debug.xcconfig */,
-				1DBCAB420C6EC32134C90A18 /* Pods-peso-pesoTests.release.xcconfig */,
-				24430BAF6B7BE8D4BADA117A /* Pods-peso-tvOS.debug.xcconfig */,
-				2C4866FE5F6F2F49BC2A8A3D /* Pods-peso-tvOS.release.xcconfig */,
-				44ECF61D6A6355D883E13BBB /* Pods-peso-tvOSTests.debug.xcconfig */,
-				C656295E46A47D3BC03433D1 /* Pods-peso-tvOSTests.release.xcconfig */,
+				FAF2EDBC9B8FE12BB0AA00E6 /* Pods-peso.debug.xcconfig */,
+				9EDF7D53EB5C3D6B85E4CAE1 /* Pods-peso.release.xcconfig */,
+				E3AFA3CDBA87A25E5E75855C /* Pods-peso-pesoTests.debug.xcconfig */,
+				4B8838F113221AE58A31CC76 /* Pods-peso-pesoTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -129,8 +121,8 @@
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
-				5F455E63AF8DA08F6E06049E /* libPods-peso.a */,
-				C893E1CB45A45C55E66EFEB7 /* libPods-peso-pesoTests.a */,
+				B608C64FE5401A42126D45F3 /* libPods-peso.a */,
+				84157A22DC181017B6B9392A /* libPods-peso-pesoTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -173,12 +165,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "pesoTests" */;
 			buildPhases = (
-				0912FE9378CF0BE8DB63FD4B /* [CP] Check Pods Manifest.lock */,
+				9A6FE27E4C03B745CE8EF4B2 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				47C23282E5E378B283E13B0A /* [CP] Copy Pods Resources */,
-				E07852A68E26233E0135B9EB /* [CP] Embed Pods Frameworks */,
+				4A668DC0F4A02F68415CF4FE /* [CP] Embed Pods Frameworks */,
+				4D6F304DA2004EF4CB5F0368 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -194,14 +186,14 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "peso" */;
 			buildPhases = (
-				D2187C21C3A2FDD37BC177E5 /* [CP] Check Pods Manifest.lock */,
+				33D2580CB6CE55190565292E /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				7805804C2081687BEF6BAE72 /* [CP] Copy Pods Resources */,
-				5DE68BF3926C00B70C836151 /* [CP] Embed Pods Frameworks */,
+				9D2E8386C717DFBE9B245A87 /* [CP] Embed Pods Frameworks */,
+				F9B487AFD47573F37652C9E9 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -225,7 +217,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = NHMBY94STG;
+						DevelopmentTeam = 3HRV88J564;
 						LastSwiftMigration = 1120;
 						ProvisioningStyle = Automatic;
 					};
@@ -286,83 +278,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
-		0912FE9378CF0BE8DB63FD4B /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-peso-pesoTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		47C23282E5E378B283E13B0A /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		5DE68BF3926C00B70C836151 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL/OpenSSL.framework/OpenSSL",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		7805804C2081687BEF6BAE72 /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-resources.sh",
-				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		D2187C21C3A2FDD37BC177E5 /* [CP] Check Pods Manifest.lock */ = {
+		33D2580CB6CE55190565292E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -384,22 +300,106 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E07852A68E26233E0135B9EB /* [CP] Embed Pods Frameworks */ = {
+		4A668DC0F4A02F68415CF4FE /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL/OpenSSL.framework/OpenSSL",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/Flipper-DoubleConversion/double-conversion.framework/double-conversion",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/Flipper-Glog/glog.framework/glog",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal/OpenSSL.framework/OpenSSL",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/double-conversion.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/glog.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		4D6F304DA2004EF4CB5F0368 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso-pesoTests/Pods-peso-pesoTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9A6FE27E4C03B745CE8EF4B2 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-peso-pesoTests-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		9D2E8386C717DFBE9B245A87 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/Flipper-DoubleConversion/double-conversion.framework/double-conversion",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/Flipper-Glog/glog.framework/glog",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal/OpenSSL.framework/OpenSSL",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/double-conversion.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/glog.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F9B487AFD47573F37652C9E9 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-resources.sh",
+				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/AccessibilityResources.bundle",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/AccessibilityResources.bundle",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-peso/Pods-peso-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -466,7 +466,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C9A136E2A077A6E3CC04A762 /* Pods-peso-pesoTests.debug.xcconfig */;
+			baseConfigurationReference = E3AFA3CDBA87A25E5E75855C /* Pods-peso-pesoTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -491,7 +491,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1DBCAB420C6EC32134C90A18 /* Pods-peso-pesoTests.release.xcconfig */;
+			baseConfigurationReference = 4B8838F113221AE58A31CC76 /* Pods-peso-pesoTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -513,21 +513,23 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 1BEC7929FAD9ACB12397FAC6 /* Pods-peso.debug.xcconfig */;
+			baseConfigurationReference = FAF2EDBC9B8FE12BB0AA00E6 /* Pods-peso.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-1";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 22;
-				DEVELOPMENT_TEAM = NHMBY94STG;
+				DEVELOPMENT_TEAM = 3HRV88J564;
 				ENABLE_BITCODE = NO;
+				EXCLUDED_ARCHS = "";
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
 				);
 				INFOPLIST_FILE = peso/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.8;
 				OTHER_LDFLAGS = (
@@ -547,16 +549,17 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6C824D31A2D7F55FC11DEB28 /* Pods-peso.release.xcconfig */;
+			baseConfigurationReference = 9EDF7D53EB5C3D6B85E4CAE1 /* Pods-peso.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon-1";
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 22;
-				DEVELOPMENT_TEAM = NHMBY94STG;
+				DEVELOPMENT_TEAM = 3HRV88J564;
 				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = peso/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.8;
 				OTHER_LDFLAGS = (

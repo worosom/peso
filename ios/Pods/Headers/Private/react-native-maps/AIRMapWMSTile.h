@@ -1,1 +1,1 @@
-../../../../../node_modules/react-native-maps/lib/ios/AirMaps/AIRMapWMSTile.h
+../../../../../node_modules/react-native-maps/ios/AirMaps/AIRMapWMSTile.h

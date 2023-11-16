@@ -1,22 +1,20 @@
 {
   "name": "react-native-maps",
-  "version": "0.27.1",
+  "version": "1.1.0",
   "summary": "React Native Mapview component for iOS + Android",
-  "authors": {
-    "intelligibabble": "leland.m.richardson@gmail.com"
-  },
-  "homepage": "https://github.com/react-native-community/react-native-maps#readme",
+  "authors": "Leland Richardson <leland.m.richardson@gmail.com>",
+  "homepage": "https://github.com/react-native-maps/react-native-maps#readme",
   "license": "MIT",
   "platforms": {
-    "ios": "8.0"
+    "ios": "11.0"
   },
   "source": {
-    "git": "https://github.com/react-native-community/react-native-maps.git",
-    "tag": "v0.27.1"
+    "git": "https://github.com/react-native-maps/react-native-maps.git",
+    "tag": "v1.1.0"
   },
-  "source_files": "lib/ios/AirMaps/**/*.{h,m}",
+  "source_files": "ios/AirMaps/**/*.{h,m}",
   "dependencies": {
-    "React": [
+    "React-Core": [
 
     ]
   }

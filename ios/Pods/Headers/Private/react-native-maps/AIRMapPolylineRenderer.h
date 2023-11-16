@@ -1,1 +1,1 @@
-../../../../../node_modules/react-native-maps/lib/ios/AirMaps/AIRMapPolylineRenderer.h
+../../../../../node_modules/react-native-maps/ios/AirMaps/AIRMapPolylineRenderer.h

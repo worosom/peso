@@ -1,1 +1,1 @@
-../../../../../node_modules/react-native-maps/lib/ios/AirMaps/AIRMapOverlayRenderer.h
+../../../../../node_modules/react-native-maps/ios/AirMaps/AIRMapOverlayRenderer.h
