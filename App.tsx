@@ -237,19 +237,16 @@ export default withTranslation()(
         if (this.state.activeGeofenceIdentifier) {
           const track = {
             url: (Platform.OS === 'ios' ? 'file://' : '') + path, // Load media from the network
-            title: this.visibleGeofence().trackTitle,
-            artist: this.visibleGeofence().musicianName,
           }
           await TrackPlayer.reset()
           await TrackPlayer.add(track)
           TrackPlayer.setRepeatMode(RepeatMode.Track)
-          await TrackPlayer.play()
+          TrackPlayer.play()
         }
       } catch (err) {
         this.setData(identifier, 'visited', false)
         this.setData(identifier, 'download', -1)
         this.setState({ downloading: false })
-        console.log(err)
       }
     }
     stop(cb) {

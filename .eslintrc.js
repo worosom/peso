@@ -3,8 +3,7 @@ module.exports = {
     // 'jest/globals': true,
   },
   root: true,
-  extends: ['@react-native-community'],
-  // plugins: ['jest'],
+  extends: ['@react-native'],
   rules: {
     semi: ['error', 'never'],
     'object-curly-spacing': ['error', 'always'],
