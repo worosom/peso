@@ -1,26 +1,23 @@
-import {
-  StyleSheet,
-  Platform
-} from 'react-native';
+import {StyleSheet, Platform} from 'react-native';
 
-export default styles = StyleSheet.create({
+export default StyleSheet.create({
   appTitleContainer: {
     position: 'absolute',
-    top: 15,
-    left: 15
+    top: 60,
+    left: 15,
   },
   appTitle: {
     paddingTop: 3,
     paddingLeft: 10,
     paddingRight: 10,
     backgroundColor: 'white',
-    elevation: 4
+    elevation: 4,
   },
   container: {
-    height: '100%'
+    height: '100%',
   },
   map: {
-    ...StyleSheet.absoluteFill
+    ...StyleSheet.absoluteFill,
   },
   header: {
     position: 'absolute',
@@ -42,39 +39,37 @@ export default styles = StyleSheet.create({
     minHeight: 50,
     position: 'absolute',
     right: 0,
-    bottom: 0
+    bottom: 0,
   },
-  infoItem: {
-  },
+  infoItem: {},
   infoTrackTitle: {
     fontStyle: 'italic',
-    marginBottom: 10
+    marginBottom: 10,
   },
   infoMusicianName: {
-    marginBottom: 5
+    marginBottom: 5,
   },
   infoAddress: {
-    marginBottom: 10
+    marginBottom: 10,
   },
-  infoSculpture: {
-  },
+  infoSculpture: {},
   iconSize: {
-    height: 20, 
-    width: 20
+    height: 20,
+    width: 20,
   },
   options: {
     backgroundColor: 'white',
     elevation: 4,
     padding: 10,
-    width: 80
+    width: 80,
   },
   switch: {
     flexDirection: 'column',
     alignItems: 'center',
-    justifyContent: 'space-between'
+    justifyContent: 'space-between',
   },
   switchLabel: {
-    textAlign: 'center'
+    textAlign: 'center',
   },
   locateButton: {
     position: 'absolute',
@@ -87,46 +82,45 @@ export default styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: 'white',
     elevation: 1,
-    overflow: 'hidden'
+    overflow: 'hidden',
   },
   locateButtonLabel: {
     color: '#FFF',
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   splashscreen: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
     justifyContent: 'space-around',
     flexDirection: 'column',
-    backgroundColor: '#e4022e'
+    backgroundColor: '#e4022e',
   },
   splashTitle: {
     fontSize: 30,
     fontWeight: 'bold',
     marginBottom: 10,
     width: '100%',
-    color: '#d0ccad'
+    color: '#d0ccad',
   },
   downloadGroup: {
     position: 'absolute',
     width: 80,
     height: 3,
     bottom: 0,
-    flexDirection: 'row'
+    flexDirection: 'row',
   },
   download({download}) {
     const style = {
       backgroundColor: '#0000CC',
       height: 3,
       elevation: 2,
-      flex: 1
-    }
+      flex: 1,
+    };
     if (download == 0) {
-      style.backgroundColor = '#FFB72DFF'
+      style.backgroundColor = '#FFB72DFF';
+    } else if (download == 1) {
+      style.backgroundColor = '#00AA00';
     }
-    else if (download == 1) {
-      style.backgroundColor = '#00AA00'
-    }
-    return style
-  }
+    return style;
+  },
 });

@@ -5,81 +5,49 @@
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
-    "start": "react-native start",
-    "test": "jest",
     "lint": "eslint .",
-    "check-dependencies": "rnx-align-deps",
-    "fix-dependencies": "rnx-align-deps --write"
+    "start": "react-native start",
+    "test": "jest"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.17.3",
-    "@react-native-community/netinfo": "^7.0.0",
-    "i18next": "^23.7.6",
-    "lodash.debounce": "^4.0.8",
-    "metro-hermes-compiler": "^0.73.10",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "react-i18next": "^13.5.0",
-    "react-native": "0.72.7",
-    "react-native-audio-recorder-player": "^3.5.1",
-    "react-native-background-actions": "^2.6.7",
-    "react-native-background-fetch": "^4.2.1",
+    "@react-native-async-storage/async-storage": "^2.1.2",
+    "@react-native-community/netinfo": "^11.4.1",
+    "i18next": "^24.2.3",
+    "react": "19.0.0",
+    "react-i18next": "^15.4.1",
+    "react-native": "0.78.1",
+    "react-native-background-actions": "^4.0.1",
     "react-native-fit-image": "^1.5.5",
     "react-native-geolocation-service": "^5.3.1",
-    "react-native-localize": "^2.1.4",
-    "react-native-maps": "^1.8.0",
-    "react-native-markdown-display": "^7.0.0-alpha.2",
-    "react-native-permissions": "^3.10.1",
-    "react-native-svg": "^12.3.0",
-    "react-native-svg-transformer": "^0.14.3",
-    "react-native-track-player": "^4.0.1",
-    "rn-fetch-blob": "^0.12.0",
-    "yarn": "^1.22.10"
+    "react-native-localize": "^3.4.1",
+    "react-native-maps": "^1.20.1",
+    "react-native-markdown-display": "^7.0.2",
+    "react-native-permissions": "^5.3.0",
+    "react-native-svg": "^15.11.2",
+    "react-native-track-player": "4.1.1",
+    "rn-fetch-blob": "^0.12.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.20.0",
-    "@babel/preset-env": "^7.20.0",
-    "@babel/runtime": "^7.20.0",
-    "@react-native/eslint-config": "^0.72.2",
-    "@react-native/metro-config": "^0.72.11",
-    "@tsconfig/react-native": "^3.0.0",
-    "@types/react": "^18.0.24",
-    "@types/react-test-renderer": "^18.0.0",
-    "babel-jest": "^29.2.1",
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@babel/runtime": "^7.25.0",
+    "@react-native-community/cli": "15.0.1",
+    "@react-native-community/cli-platform-android": "15.0.1",
+    "@react-native-community/cli-platform-ios": "15.0.1",
+    "@react-native/babel-preset": "0.78.1",
+    "@react-native/eslint-config": "0.78.1",
+    "@react-native/metro-config": "0.78.1",
+    "@react-native/typescript-config": "0.78.1",
+    "@types/jest": "^29.5.13",
+    "@types/react": "^19.0.0",
+    "@types/react-test-renderer": "^19.0.0",
     "eslint": "^8.19.0",
-    "hermes-engine": "^0.11.0",
-    "jest": "^29.2.1",
-    "metro-react-native-babel-preset": "0.76.8",
-    "prettier": "^2.4.1",
-    "react-native-clean-project": "^4.0.1",
-    "react-test-renderer": "18.2.0",
-    "typescript": "4.8.4"
-  },
-  "jest": {
-    "preset": "react-native"
-  },
-  "rnx-kit": {
-    "kitType": "app",
-    "alignDeps": {
-      "requirements": [
-        "react-native@0.68"
-      ],
-      "capabilities": [
-        "babel-preset-react-native",
-        "core",
-        "core-android",
-        "core-ios",
-        "jest",
-        "netinfo",
-        "react",
-        "react-dom",
-        "react-test-renderer",
-        "storage",
-        "svg"
-      ]
-    }
+    "jest": "^29.6.3",
+    "prettier": "2.8.8",
+    "react-test-renderer": "19.0.0",
+    "typescript": "5.0.4"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   }
 }

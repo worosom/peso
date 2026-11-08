@@ -2,36 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:peso/peso-30s-rest-1m01.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:peso/peso-30s-rest-1m.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:peso/peso-1m-rest.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:gtr.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:peso/peso-1m.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:mapstogpx20201123_150524.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:peso.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:../../../peso.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:mapstogpx20201123_115246.gpx">
-   </FileRef>
-   <FileRef
-      location = "group:../../../Downloads/peso-test.gpx">
-   </FileRef>
-   <FileRef
       location = "group:peso.xcodeproj">
    </FileRef>
    <FileRef

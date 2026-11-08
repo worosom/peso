@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -11,16 +11,16 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
-} from 'react-native'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import NetInfo from '@react-native-community/netinfo'
-import BackgroundService from 'react-native-background-actions'
-import Geolocation from 'react-native-geolocation-service'
-import TrackPlayer, { RepeatMode } from 'react-native-track-player'
-import RNFetchBlob from 'rn-fetch-blob'
-import FitImage from 'react-native-fit-image'
-import configMap from './src/components/Map.js'
-import styles from './src/styles.js'
+} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
+import BackgroundService from 'react-native-background-actions';
+import Geolocation from 'react-native-geolocation-service';
+import TrackPlayer, {RepeatMode} from 'react-native-track-player';
+import RNFetchBlob from 'rn-fetch-blob';
+import FitImage from 'react-native-fit-image';
+import { configMap } from './src/components/Map.js';
+import styles from './src/styles.js';
 import {
   pathFromUri,
   download,
@@ -29,18 +29,18 @@ import {
   idleMessage,
   fetchGeofences,
   errors,
-} from './src/util.js'
-import Map from './src/components/Map.js'
-import OfflineMode from './src/components/OfflineMode.js'
-import AppInfo from './src/components/Info.js'
-import ErrorMessage from './src/components/Error.js'
+} from './src/util.js';
+import Map from './src/components/Map.js';
+import OfflineMode from './src/components/OfflineMode.js';
+import AppInfo from './src/components/Info.js';
+import ErrorMessage from './src/components/Error.js';
 
-import './src/Translations'
-import i18n from 'i18next'
-import { withTranslation } from 'react-i18next'
-import * as RNLocalize from 'react-native-localize'
+import './src/Translations';
+import i18n from 'i18next';
+import {withTranslation} from 'react-i18next';
+import * as RNLocalize from 'react-native-localize';
 
-const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time))
+const sleep = time => new Promise(resolve => setTimeout(() => resolve(), time));
 
 const options = {
   taskName: 'Example',
@@ -55,38 +55,38 @@ const options = {
   parameters: {
     delay: 1000,
   },
-}
+};
 
 const computeInfoHeight = (showAppInfo, isArtwork) => {
   if (!showAppInfo) {
-    return 66.5
+    return 66.5;
   }
-  const { height, width } = Dimensions.get('window')
+  const {height, width} = Dimensions.get('window');
   if (isArtwork || height < width) {
-    return Math.max(0, height - 125)
+    return Math.max(0, height - 125);
   } else {
-    return height * 0.4
+    return height * 0.4;
   }
-}
+};
 
 const shadowStyle = {
   shadowColor: '#000',
-  shadowOffset: { width: 0.125, height: 0.125 },
+  shadowOffset: {width: 0.125, height: 0.125},
   shadowOpacity: 0.25,
   shadowRadius: 0.7,
-}
+};
 
 export default withTranslation()(
   class App extends React.Component {
     constructor(props) {
-      super(props)
+      super(props);
       this.appStateChange = state => {
-        state === 'active' && this.forceUpdate()
+        state === 'active' && this.forceUpdate();
         if (state === 'background') {
-          this.cancelDownloads()
+          this.cancelDownloads();
         }
-      }
-      this.playbackOptions = {}
+      };
+      this.playbackOptions = {};
       this.state = {
         geofencesLoaded: false,
         geofencesLoading: false,
@@ -102,82 +102,95 @@ export default withTranslation()(
         idleMessage: idleMessage(),
         showAppInfo: true,
         isMoving: true,
-      }
-      i18n.changeLanguage(RNLocalize.getLocales()[0].languageCode)
+      };
+      i18n.changeLanguage(RNLocalize.getLocales()[0].languageCode);
     }
     async componentDidMount() {
-      BackgroundService.stop()
-      TrackPlayer.stop()
+      BackgroundService.stop();
+      TrackPlayer.stop();
       try {
-        await TrackPlayer.setupPlayer()
+        await TrackPlayer.setupPlayer();
       } catch {
-        console.log('TrackPlayer already set up')
+        console.log('TrackPlayer already set up');
       }
-      Dimensions.addEventListener('change', () => {
-        this.forceUpdate()
-      })
-      AppState.addEventListener('change', this.appStateChange)
-      NetInfo.addEventListener(netState => {
+      // Store subscription to remove it later
+      this.dimensionsSubscription = Dimensions.addEventListener('change', () => {
+        this.forceUpdate();
+      });
+      // Store subscription to remove it later
+      this.appStateSubscription = AppState.addEventListener('change', this.appStateChange);
+      // Store subscription to remove it later
+      this.netInfoSubscription = NetInfo.addEventListener(netState => {
         if (!this.state.geofencesLoaded && !this.state.geofencesLoading) {
-          this.fetchData(netState)
+          this.fetchData(netState);
         }
         if (this.state.geofencesLoaded) {
           if (!netState.isConnected && !this.state.storageState) {
-            this.setState({ errorMessage: errors('networkError') })
-            this.stopGeolocation()
+            this.setState({errorMessage: errors('networkError')});
+            this.stopGeolocation();
           } else if (netState.isConnected) {
-            this.setState({ errorMessage: null })
+            this.setState({errorMessage: null});
           }
         }
-      })
+      });
     }
     componentWillUnmount() {
-      TrackPlayer.stop()
-      BackgroundService.stop()
-      AppState.removeEventListener('change', this.appStateChange)
-      this.stopGeolocation()
+      TrackPlayer.stop();
+      BackgroundService.stop();
+      // Use the subscription objects to remove the listeners
+      if (this.appStateSubscription) {
+        this.appStateSubscription.remove();
+      }
+      if (this.dimensionsSubscription) {
+        this.dimensionsSubscription.remove();
+      }
+      if (this.netInfoSubscription) {
+        this.netInfoSubscription();  // NetInfo returns a function to unsubscribe
+      }
+      this.stopGeolocation();
     }
     loadFromStorage() {
       AsyncStorage.getItem('@data')
         .then(data => JSON.parse(data))
         .then(data => {
           if (data) {
-            this.setState({ geofencesLoading: false })
-            this.setup(data)
+            this.setState({geofencesLoading: false});
+            this.setup(data);
           } else {
             this.setState({
               errorMessage: errors('TypeError: Network request failed'),
-            })
+            });
           }
         })
-        .catch(err => this.setState({ errorMessage: errors(String(err)) }))
+        .catch(err => this.setState({errorMessage: errors(String(err))}));
     }
     fetchData(netState) {
-      this.setState({ geofencesLoading: true })
+      this.setState({geofencesLoading: true});
       if (netState && netState.isConnected) {
         fetchGeofences()
           .then(data => {
-            this.setState({ geofencesLoading: false, errorMessage: null })
-            this.setup(data)
-            AsyncStorage.setItem('@data', JSON.stringify(data))
+            this.setState({geofencesLoading: false, errorMessage: null});
+            this.setup(data);
+            AsyncStorage.setItem('@data', JSON.stringify(data));
           })
           .catch(err => {
+            console.error(err);
             this.setState(
               {
                 geofencesLoading: false,
                 errorMessage: errors('networkError'),
               },
               _ => {
-                this.loadFromStorage()
+                this.loadFromStorage();
               },
-            )
-          })
+            );
+          });
       } else {
-        this.loadFromStorage()
+        this.loadFromStorage();
         this.setState({
           geofencesLoading: false,
           errorMessage: errors('networkError'),
-        })
+        });
       }
     }
     async setup(data) {
@@ -191,83 +204,83 @@ export default withTranslation()(
           notifyOnExit: true,
           download: -1,
           visited: false,
-        }
-        const path = pathFromUri(g.uri)
+        };
+        const path = pathFromUri(g.uri);
         RNFetchBlob.fs.exists(path).then(exists => {
-          this.setData(g.identifier, 'download', exists ? 1 : -1)
+          this.setData(g.identifier, 'download', exists ? 1 : -1);
           let downloaded = Object.values(this.state.data).map(
             g => g.download === 1,
-          )
-          downloaded = downloaded.every(_ => _)
+          );
+          downloaded = downloaded.every(_ => _);
           if (downloaded) {
-            this.setState({ storageState: true })
-            this.setState({ errorMessage: null })
+            this.setState({storageState: true});
+            this.setState({errorMessage: null});
           }
-        })
-      })
-      this.setState({ geofencesLoaded: true })
+        });
+      });
+      this.setState({geofencesLoaded: true});
     }
     async play() {
-      const identifier = this.state.activeGeofenceIdentifier
-      console.log(`Active geofence is ${identifier}`)
+      const identifier = this.state.activeGeofenceIdentifier;
+      console.log(`Active geofence is ${identifier}`);
       if (identifier === null) {
-        this.stop()
-        return
+        this.stop();
+        return;
       }
-      this.setState({ visibleGeofenceIdentifier: identifier })
-      const downloadState = this.state.data[identifier].download
+      this.setState({visibleGeofenceIdentifier: identifier});
+      const downloadState = this.state.data[identifier].download;
       if (downloadState === 0) {
-        return
+        return;
       }
-      await TrackPlayer.stop()
-      const uri = this.activeGeofence().uri
+      await TrackPlayer.stop();
+      const uri = this.activeGeofence().uri;
       if (this.activeGeofence().download === -1) {
-        this.setData(identifier, 'download', 0)
-        this.setState({ downloading: true })
+        this.setData(identifier, 'download', 0);
+        this.setState({downloading: true});
       }
       try {
-        const res = await download(uri)
-        const path = res.path()
-        console.log('Downloaded', path)
-        this.setData(identifier, 'download', 1)
-        this.setState({ downloading: false })
+        const res = await download(uri);
+        const path = res.path();
+        console.log('Downloaded', path);
+        this.setData(identifier, 'download', 1);
+        this.setState({downloading: false});
         if (this.allDownloaded()) {
-          this.setState({ storageState: true })
+          this.setState({storageState: true});
         }
         if (this.state.activeGeofenceIdentifier) {
           const track = {
             url: (Platform.OS === 'ios' ? 'file://' : '') + path, // Load media from the network
             title: this.visibleGeofence().trackTitle,
             artist: this.visibleGeofence().musicianName,
-          }
-          await TrackPlayer.reset()
-          await TrackPlayer.add(track)
-          TrackPlayer.setRepeatMode(RepeatMode.Track)
-          await TrackPlayer.play()
+          };
+          await TrackPlayer.reset();
+          await TrackPlayer.add(track);
+          TrackPlayer.setRepeatMode(RepeatMode.Track);
+          await TrackPlayer.play();
         }
       } catch (err) {
-        this.setData(identifier, 'visited', false)
-        this.setData(identifier, 'download', -1)
-        this.setState({ downloading: false })
-        console.log(err)
+        this.setData(identifier, 'visited', false);
+        this.setData(identifier, 'download', -1);
+        this.setState({downloading: false});
+        console.log(err);
       }
     }
     stop(cb) {
       // console.log('stop')
-      TrackPlayer.stop()
-      this.setState({ activeGeofenceIdentifier: null })
-      cb && cb()
+      TrackPlayer.stop();
+      this.setState({activeGeofenceIdentifier: null});
+      cb && cb();
     }
     async backgroundService() {
-      const cb = onLocation.bind(this)
+      const cb = onLocation.bind(this);
       await new Promise(async resolve => {
         while (BackgroundService.isRunning()) {
           Geolocation.getCurrentPosition(geolocation => {
-            cb(geolocation)
-          })
-          await sleep(1000)
+            cb(geolocation);
+          });
+          await sleep(1000);
         }
-      })
+      });
     }
     startGeolocation() {
       const start = _ => {
@@ -275,13 +288,13 @@ export default withTranslation()(
           async () => await this.backgroundService(),
           options,
         ).then(() => {
-          this.setState({ backgroundGeolocationRunning: true })
-          AsyncStorage.setItem('@geolocationAlertShown', 'true')
-        })
-      }
+          this.setState({backgroundGeolocationRunning: true});
+          AsyncStorage.setItem('@geolocationAlertShown', 'true');
+        });
+      };
       AsyncStorage.getItem('@geolocationAlertShown').then(val => {
         if (val !== null) {
-          start()
+          start();
         } else {
           Alert.alert(
             this.props.t('geolocationAlert.title'),
@@ -296,34 +309,36 @@ export default withTranslation()(
                 onPress: start,
               },
             ],
-            { cancelable: true },
-          )
+            {cancelable: true},
+          );
         }
-      })
+      });
     }
     stopGeolocation(cb) {
       this.stop(_ => {
-        BackgroundService.stop()
-        console.log('Stopped Geolocation')
-        this.setState({ backgroundGeolocationRunning: false })
-        cb && cb()
-      })
+        BackgroundService.stop();
+        console.log('Stopped Geolocation');
+        this.setState({backgroundGeolocationRunning: false});
+        cb && cb();
+      });
     }
     allDownloaded() {
-      let downloaded = Object.values(this.state.data).map(g => g.download === 1)
-      return downloaded.every(_ => _)
+      let downloaded = Object.values(this.state.data).map(
+        g => g.download === 1,
+      );
+      return downloaded.every(_ => _);
     }
     allDeleted() {
-      let deleted = Object.values(this.state.data).map(g => g.download === -1)
-      return deleted.every(_ => _)
+      let deleted = Object.values(this.state.data).map(g => g.download === -1);
+      return deleted.every(_ => _);
     }
     downloadAll(data = this.state.data) {
-      let toDownload = Object.keys(data).length
-      this.setState({ downloadingAll: true })
+      let toDownload = Object.keys(data).length;
+      this.setState({downloadingAll: true});
       const backgroundGeolocationRunning =
-        this.state.backgroundGeolocationRunning
+        this.state.backgroundGeolocationRunning;
       if (backgroundGeolocationRunning) {
-        this.stopGeolocation()
+        this.stopGeolocation();
       }
 
       Object.values(data).map(geofence => {
@@ -332,25 +347,25 @@ export default withTranslation()(
             this.state.activeGeofenceIdentifier === geofence.identifier) ||
           !geofence
         ) {
-          return
+          return;
         }
-        this.setData(geofence.identifier, 'download', 0)
+        this.setData(geofence.identifier, 'download', 0);
         download(geofence.uri)
           .then(_ => {
-            this.setData(geofence.identifier, 'download', 1)
+            this.setData(geofence.identifier, 'download', 1);
             if (this.allDownloaded()) {
-              this.setState({ storageState: true })
+              this.setState({storageState: true});
             }
 
-            const downloaded = toDownload === 1 ? true : this.allDownloaded()
+            const downloaded = toDownload === 1 ? true : this.allDownloaded();
             if (downloaded) {
               if (backgroundGeolocationRunning) {
-                this.startGeolocation()
+                this.startGeolocation();
               }
               this.setState({
                 offlineButtonDisabled: false,
                 downloadingAll: false,
-              })
+              });
             }
           })
           .catch(err => {
@@ -359,9 +374,9 @@ export default withTranslation()(
               offlineButtonDisabled: false,
               downloadingAll: false,
               errorMessage: errors('networkError'),
-            })
-          })
-      })
+            });
+          });
+      });
     }
     downloadAllAlert() {
       Alert.alert(
@@ -377,54 +392,54 @@ export default withTranslation()(
             onPress: _ => this.downloadAll(),
           },
         ],
-        { cancelable: true },
-      )
+        {cancelable: true},
+      );
     }
     cancelDownloads() {
       Object.values(this.state.data).map(geofence => {
         if (geofence.download == 0) {
-          const path = pathFromUri(geofence.uri)
+          const path = pathFromUri(geofence.uri);
           RNFetchBlob.fs.exists(path).then(exists => {
             exists &&
               RNFetchBlob.fs.unlink(path).then(_ => {
-                console.log(`Deleted ${path}`)
-                this.setData(geofence.identifier, 'download', -1)
-              })
-          })
+                console.log(`Deleted ${path}`);
+                this.setData(geofence.identifier, 'download', -1);
+              });
+          });
         }
-      })
+      });
     }
     deleteAll(data = this.state.data) {
-      let toDelete = Object.keys(data).length
-      this.setState({ storageState: false })
+      let toDelete = Object.keys(data).length;
+      this.setState({storageState: false});
 
       Object.values(data).map(geofence => {
         if (
           toDelete > 1 &&
           this.state.activeGeofenceIdentifier == geofence.identifier
         ) {
-          return
+          return;
         }
-        const path = pathFromUri(geofence.uri)
+        const path = pathFromUri(geofence.uri);
         RNFetchBlob.fs.exists(path).then(exists => {
           exists &&
             RNFetchBlob.fs.unlink(path).then(_ => {
-              console.log(`Deleted ${path}`)
-              this.setData(geofence.identifier, 'download', -1)
-              const allDeleted = toDelete === 1 ? true : this.allDeleted()
+              console.log(`Deleted ${path}`);
+              this.setData(geofence.identifier, 'download', -1);
+              const allDeleted = toDelete === 1 ? true : this.allDeleted();
               if (allDeleted) {
-                this.setState({ offlineButtonDisabled: false })
+                this.setState({offlineButtonDisabled: false});
               }
-            })
-        })
-      })
+            });
+        });
+      });
       NetInfo.fetch().then(netState => {
         if (!netState.isConnected) {
-          this.setState({ errorMessage: errors('networkError') })
-          this.stopGeolocation()
+          this.setState({errorMessage: errors('networkError')});
+          this.stopGeolocation();
         }
-      })
-      this.forceUpdate()
+      });
+      this.forceUpdate();
     }
     deleteAllAlert() {
       Alert.alert(
@@ -441,63 +456,63 @@ export default withTranslation()(
             onPress: _ => this.deleteAll(),
           },
         ],
-        { cancelable: true },
-      )
+        {cancelable: true},
+      );
     }
     setData(identifier, key, value) {
       this.setState(previousState => {
-        const data = { ...previousState.data }
+        const data = {...previousState.data};
         data[identifier] = {
           ...data[identifier],
-        }
-        data[identifier][key] = value
-        return { data }
-      })
+        };
+        data[identifier][key] = value;
+        return {data};
+      });
     }
     enableStorage(netStatus) {
       if (netStatus.isConnected) {
         if (netStatus.type !== 'wifi') {
-          this.downloadAllAlert()
+          this.downloadAllAlert();
         } else {
-          this.downloadAll()
+          this.downloadAll();
         }
       }
     }
     toggleStorage() {
-      this.state.offlineButtonDisabled = true
+      this.state.offlineButtonDisabled = true;
       NetInfo.fetch().then(netStatus => {
         if (this.state.storageState) {
-          this.deleteAllAlert()
+          this.deleteAllAlert();
         } else {
-          this.enableStorage(netStatus)
+          this.enableStorage(netStatus);
         }
-      })
+      });
     }
     toggleGeolocation() {
-      this.setState({ idleMessage: idleMessage() })
+      this.setState({idleMessage: idleMessage()});
 
       if (this.state.backgroundGeolocationRunning) {
-        this.stopGeolocation()
+        this.stopGeolocation();
       } else {
-        this.startGeolocation()
+        this.startGeolocation();
       }
     }
     geofenceRadius(radius) {
-      return radius / 2
+      return radius / 2;
     }
     getMapStyle() {
-      return configMap.mapStyle
+      return configMap.mapStyle;
     }
     activeGeofence() {
-      return this.state.data[this.state.activeGeofenceIdentifier]
+      return this.state.data[this.state.activeGeofenceIdentifier];
     }
     visibleGeofence() {
-      return this.state.data[this.state.visibleGeofenceIdentifier]
+      return this.state.data[this.state.visibleGeofenceIdentifier];
     }
     getInfo() {
-      let res = {}
+      let res = {};
       if (this.state.visibleGeofenceIdentifier) {
-        res = this.visibleGeofence()
+        res = this.visibleGeofence();
       } else {
         const keys = [
           'trackTitle',
@@ -507,23 +522,23 @@ export default withTranslation()(
           'sculptureTitle',
           'artistName',
           'year',
-        ]
-        keys.map(key => (res[key] = ''))
-        res.trackTitle = this.state.idleMessage
+        ];
+        keys.map(key => (res[key] = ''));
+        res.trackTitle = this.state.idleMessage;
       }
-      return res
+      return res;
     }
     downloadThumbColor() {
       if (this.state.downloadingAll) {
-        return '#FFB72D7F'
+        return '#FFB72D7F';
       }
-      return this.state.storageState ? '#0A0' : '#ccc'
+      return this.state.storageState ? '#0A0' : '#ccc';
     }
     onMarkerPress(geofence) {
-      this.setState({ visibleGeofenceIdentifier: geofence.identifier })
+      this.setState({visibleGeofenceIdentifier: geofence.identifier});
     }
     onMapTouch() {
-      this.setState({ showAppInfo: false, visibleGeofenceIdentifier: null })
+      this.setState({showAppInfo: false, visibleGeofenceIdentifier: null});
     }
     render() {
       if (!this.state.geofencesLoaded) {
@@ -537,15 +552,14 @@ export default withTranslation()(
                 height: '50%',
                 width: '100%',
                 backgroundColor: '#d0ccad',
-              }}
-            ></View>
-            <View style={{ width: '100%' }}>
+              }}></View>
+            <View style={{width: '100%'}}>
               <FitImage
                 originalWidth={512}
                 originalHeight={512}
                 source={require('./src/assets/ACCUEIL_512PX.png')}
               />
-              <View style={{ padding: 40 }}>
+              <View style={{padding: 40}}>
                 <ErrorMessage
                   splash={true}
                   title={
@@ -557,15 +571,15 @@ export default withTranslation()(
             </View>
             {!this.state.errorMessage && (
               <ActivityIndicator
-                style={{ position: 'absolute', bottom: 40, right: 40 }}
+                style={{position: 'absolute', bottom: 40, right: 40}}
                 size="large"
                 color="#FFB72D"
               />
             )}
           </View>
-        )
+        );
       }
-      const info = this.getInfo()
+      const info = this.getInfo();
       return (
         <SafeAreaView>
           <View style={styles.container}>
@@ -580,12 +594,10 @@ export default withTranslation()(
             <View style={styles.appTitleContainer}>
               <Pressable
                 style={[styles.appTitle, shadowStyle]}
-                android_ripple={{ color: 'B2DAD6' }}
-                onPress={_ => this.map.showAllMarkers()}
-              >
+                android_ripple={{color: 'B2DAD6'}}
+                onPress={_ => this.map.showAllMarkers()}>
                 <Text
-                  style={{ fontWeight: 'bold', fontSize: 20, marginBottom: 5 }}
-                >
+                  style={{fontWeight: 'bold', fontSize: 20, marginBottom: 5}}>
                   Belvédère Sonore Geneva
                 </Text>
               </Pressable>
@@ -604,17 +616,15 @@ export default withTranslation()(
               style={[
                 styles.options,
                 shadowStyle,
-                { position: 'absolute', bottom: 0 },
-              ]}
-            >
+                {position: 'absolute', bottom: 0},
+              ]}>
               <Pressable
                 disabled={
                   this.state.errorMessage ||
                   this.state.downloadingAll ||
                   this.state.offlineButtonDisabled
                 }
-                onPress={_ => this.toggleGeolocation()}
-              >
+                onPress={_ => this.toggleGeolocation()}>
                 <View style={styles.switch}>
                   <Text style={styles.switchLabel}>
                     {this.props.t('tracking')}
@@ -645,17 +655,15 @@ export default withTranslation()(
                 scrollEnabled={
                   !!this.state.visibleGeofenceIdentifier ||
                   (this.state.showAppInfo && !this.state.downloadingAll)
-                }
-              >
+                }>
                 <Pressable
-                  onPress={_ => this.setState({ showAppInfo: true })}
+                  onPress={_ => this.setState({showAppInfo: true})}
                   style={{
                     paddingTop: 10,
                     paddingLeft: 10,
                     paddingRight: 10,
                     paddingBottom: 0,
-                  }}
-                >
+                  }}>
                   {this.state.errorMessage && (
                     <ErrorMessage
                       title={this.state.errorMessage.title}
@@ -674,65 +682,61 @@ export default withTranslation()(
                         this.state.backgroundGeolocationRunning)) &&
                     !this.state.downloadingAll && (
                       <>
-                        <View style={{ flex: 1, flexDirection: 'row' }}>
+                        <View style={{flex: 1, flexDirection: 'row'}}>
                           {this.state.visibleGeofenceIdentifier && (
-                            <View style={{ flex: 1 }}>
+                            <View style={{flex: 1}}>
                               <FitImage
                                 style={styles.iconSize}
                                 source={require('./src/assets/music.png')}
                               />
                             </View>
                           )}
-                          <View style={{ flex: 8 }}>
+                          <View style={{flex: 8}}>
                             <Text
-                              style={[styles.infoItem, styles.musicianName]}
-                            >
+                              style={[styles.infoItem, styles.musicianName]}>
                               {info.musicianName}
                             </Text>
                             <Text
-                              style={[styles.infoItem, styles.infoTrackTitle]}
-                            >
+                              style={[styles.infoItem, styles.infoTrackTitle]}>
                               {info.trackTitle}
                             </Text>
                           </View>
                         </View>
                         {!!info.imageUri && (
                           <FitImage
-                            style={{ marginTop: 5, marginBottom: 15 }}
-                            source={{ uri: info.imageUri }}
+                            style={{marginTop: 5, marginBottom: 15}}
+                            source={{uri: info.imageUri}}
                           />
                         )}
                         {!!this.state.visibleGeofenceIdentifier && (
                           <>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                              <View style={{ flex: 1 }}>
+                            <View style={{flex: 1, flexDirection: 'row'}}>
+                              <View style={{flex: 1}}>
                                 <FitImage
                                   style={styles.iconSize}
                                   source={require('./src/assets/location.png')}
                                 />
                               </View>
-                              <View style={{ flex: 8 }}>
+                              <View style={{flex: 8}}>
                                 <Text
-                                  style={[styles.infoItem, styles.infoAddress]}
-                                >
+                                  style={[styles.infoItem, styles.infoAddress]}>
                                   {info.address}
                                 </Text>
                               </View>
                             </View>
-                            <View style={{ flex: 1, flexDirection: 'row' }}>
-                              <View style={{ flex: 1 }}>
+                            <View style={{flex: 1, flexDirection: 'row'}}>
+                              <View style={{flex: 1}}>
                                 <FitImage
                                   style={styles.iconSize}
                                   source={require('./src/assets/view.png')}
                                 />
                               </View>
-                              <View style={{ flex: 8 }}>
+                              <View style={{flex: 8}}>
                                 <Text
                                   style={[
                                     styles.infoItem,
                                     styles.infoSculpture,
-                                  ]}
-                                >
+                                  ]}>
                                   {info.artistName}
                                 </Text>
                                 <Text
@@ -740,8 +744,7 @@ export default withTranslation()(
                                     styles.infoItem,
                                     styles.infoSculpture,
                                     styles.infoTrackTitle,
-                                  ]}
-                                >
+                                  ]}>
                                   {info.sculptureTitle} {info.year}
                                 </Text>
                               </View>
@@ -763,9 +766,8 @@ export default withTranslation()(
                                 flexDirection: 'row',
                                 justifyContent: 'space-around',
                                 padding: 10,
-                              }}
-                            >
-                              <Text style={{ textDecorationLine: 'underline' }}>
+                              }}>
+                              <Text style={{textDecorationLine: 'underline'}}>
                                 {this.props.t('remove')}
                               </Text>
                             </Pressable>
@@ -786,9 +788,8 @@ export default withTranslation()(
                                 flexDirection: 'row',
                                 justifyContent: 'space-around',
                                 padding: 10,
-                              }}
-                            >
-                              <Text style={{ textDecorationLine: 'underline' }}>
+                              }}>
+                              <Text style={{textDecorationLine: 'underline'}}>
                                 {this.props.t('download')}
                               </Text>
                             </Pressable>
@@ -796,7 +797,7 @@ export default withTranslation()(
                         )}
                         {this.state.downloading && (
                           <ActivityIndicator
-                            style={{ position: 'absolute', right: 10, top: 10 }}
+                            style={{position: 'absolute', right: 10, top: 10}}
                             size="small"
                             color="#FFB72D"
                           />
@@ -805,11 +806,11 @@ export default withTranslation()(
                     )}
                   {this.state.downloadingAll && !this.state.errorMessage && (
                     <>
-                      <Text style={{ fontWeight: 'bold', height: 50 }}>
+                      <Text style={{fontWeight: 'bold', height: 50}}>
                         Downloading...
                       </Text>
                       <ActivityIndicator
-                        style={{ position: 'absolute', right: 15, top: 15 }}
+                        style={{position: 'absolute', right: 15, top: 15}}
                         size="large"
                         color="#FFB72D"
                       />
@@ -820,7 +821,7 @@ export default withTranslation()(
             </View>
           </View>
         </SafeAreaView>
-      )
+      );
     }
   },
-)
+);
